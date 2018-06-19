@@ -1,14 +1,14 @@
 +++
 title =  "A Faktory Client in PHP"
-date =  2018-06-14T00:00:00-07:00
+date =  2018-06-18T00:00:00-07:00
 tags = ["php"]
-draft = true
+draft = false
 +++
 
-Faktory is a worker server created by Mike Perham, the same person who created Sidekiq. His aim in developing the tool is
-to bring the same best practices hashed out by Sidekiq to languages besides Ruby. Faktory is still in a pre-release
-phase (at the time of writing this post it is at 0.7.0). It might not yet be ready for primetime, but I decided to give
-it a try anyway.
+[Faktory](http://contribsys.com/faktory/) is a worker server created by Mike Perham, the same person who created
+[Sidekiq](https://sidekiq.org/). His aim in developing the tool is to bring the same best practices hashed out by
+Sidekiq to languages besides Ruby. Faktory is still in a pre-release phase (at the time of writing this post it is at
+0.7.0). It might not yet be ready for primetime, but I decided to give it a try anyway.
 
 Below follows a description of how Faktory works and how I went about implementing the library, noting any important
 decisions. I am working on a project that uses this library and will write up on that experience once
@@ -54,20 +54,96 @@ Implemenations of the two interfaces are provided that accept instances of a `Cl
 The Faktory protocol defines messages as "work units", and as such, a `WorkUnit` class is defined within the project. Most
 developers are probably used to seeing this called something more along the lines of a "job", but I believe it is
 important to work within the defined protocol of a tool like Faktory to make understanding correlations easier in
-future development. Generally, this logic will be encapsulated by another worker library, so should have limited impact
-on users of the library.
+future development. Generally, this domain concept will be encapsulated by another worker library so should have
+limited impact on users of the library.
 
 Finally, I kept the library less opinionated by implementing a consumer but purposefully avoiding implementing
 a "worker" pattern. The `examples/consumer.php` file demonstrates how this _could_ be done, but I believe that the
 worker pattern can take on many forms and is often a by-product of other libraries and frameworks in use. I'm working
 on an example of this, and will follow up as I have finished it.
 
+## Examples
+
+The examples are taken from the `examples` directory of the project.
+
+Producing messages:
+
+```php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$connection = new \Camuthig\Faktory\Client('tcp://127.0.0.1', 7419);
+
+$producer = new \Camuthig\Faktory\Producer($connection);
+
+while (true) {
+    $id = uniqid();
+    echo "Pushing job with ID $id\n";
+    $producer->push(new \Camuthig\Faktory\WorkUnit($id, 'example', []));
+    sleep(1);
+}
+```
+
+Consuming messages:
+```php
+<?php
+
+declare(ticks=1);
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$connection = new \Camuthig\Faktory\Client('127.0.0.1', 7419, [
+    'wid' => uniqid(),
+    'labels' => ['php'],
+]);
+
+$consumer = new \Camuthig\Faktory\Consumer($connection);
+
+$status = null;
+$interrupt = null;
+
+pcntl_signal(SIGINT, function ($signo, $signinfo) use (&$interrupt) {
+    $interrupt = true;
+});
+
+while (true) {
+    if ($interrupt) {
+        echo "Stopping consumer...\n";
+        $consumer->end();
+        exit(0);
+    }
+
+    if ($status === \Camuthig\Faktory\ConsumerInterface::TERMINATE) {
+        echo "Server requested consumer termination.\n";
+        exit(0);
+    } elseif ($status === \Camuthig\Faktory\ConsumerInterface::QUIET) {
+        echo "Server requested consumer to go quiet.\n";
+    } else {
+        $workUnit = $consumer->fetch();
+
+        if (!$workUnit) {
+            sleep(5);
+            continue;
+        }
+
+        echo "Received work unit " . $workUnit->getJobId() . "\n";
+        $consumer->ack($workUnit);
+    }
+
+    sleep(1);
+
+    $status = $consumer->beat();
+}
+```
+
 ## Improvements
 
 The project could use some improvements still, including:
 
-* Fixing a bug related to stopping workers and the connection closeing while handling the `END` command
+* Fixing a bug related to stopping workers and the connection closing while handling the `END` command
 * Reconnecting to the server on a TCP exception
 * Supporting authentication to the Faktory server
 * Tests. I considered writing some unit tests, but realized they would be nearly useless without testing the
-`Client` implementation. I'm still considering some functional tests using a Faktory CLI to send commands.
+`Client` implementation. I'm still considering some functional tests using some kind of command line tool to send
+commands.
