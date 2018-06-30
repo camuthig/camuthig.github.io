@@ -1,7 +1,7 @@
 ---
 title: "Easy Oauth1 Client in PHP"
 date: 2018-06-19T08:48:04-07:00
-tags = ["php"]
+tags: ["php"]
 draft: false
 ---
 I spent longer than I would have liked the other day finding a good way to
