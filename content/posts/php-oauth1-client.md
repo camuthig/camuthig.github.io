@@ -2,7 +2,7 @@
 title: "Easy Oauth1 Client in PHP"
 date: 2018-06-19T08:48:04-07:00
 tags = ["php"]
-draft: true
+draft: false
 ---
 I spent longer than I would have liked the other day finding a good way to
 use OAuth1 client credentials to integrate with an API in PHP. In the end,
@@ -41,5 +41,5 @@ $client = new Client([
 
 And bam! You've got yourself OAuth1 client authentication. The great part of
 this is that by putting it on your client, you can abstract away the knowledge
-that this is even necessary. It fits wonderfully into a DI pattern of injecting
+that this is even necessary, and it fits wonderfully into a DI pattern of injecting
 a Guzzle `ClientInterface` into your classes.
