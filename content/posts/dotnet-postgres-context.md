@@ -2,7 +2,6 @@
 title: ".NET Core Postgres Context"
 date: 2018-12-05
 tags: ["c#", ".net", "postgres"]
-draft: true
 ---
 
 I've been playing around with .NET recently to see if I like it as a strongly typed web framework. One issue I ran into
