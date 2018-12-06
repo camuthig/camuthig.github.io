@@ -23,3 +23,8 @@ git push origin master
 
 # Come Back up to the Project Root
 cd ..
+
+# Update the Sub Project on the Project Root
+git add public
+git commit -m "$msg"
+git push origin master
