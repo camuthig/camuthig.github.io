@@ -3,7 +3,7 @@ install:
   - tar -xzvf hugo_0.52_Linux-64bit.tar.gz
 
 script:
-  - hugo
+  - ./hugo
 
 branches:
   except:
