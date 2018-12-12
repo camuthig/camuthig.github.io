@@ -5,10 +5,10 @@ tags: ["php"]
 draft: true
 ---
 
-By the time this post is live, PHP 7.3 should already have dropped. Since the release of 7.0, I have found myself very
-happy with the quality of work the core team has released. A lot of new language features have been released that focus
-on deveoper productivity, which matters a lot when maintaining a large project. PHP 7.3 includes a number of great
-features, but there are a few that I am especially excited about.
+By the time this post is live, PHP 7.3 should already have dropped. I am very happy with the quality of work released
+by the core team since the release of 7.0. They have built a number of amazing features into the language that focus on
+developer productivity, which makes a difference when maintaining a large project. PHP 7.3 follows suit, including
+several great features, but there are a few that I am especially excited about.
 
 - [Throw on JSON Errors {#throw-on-json-error}](#throw-on-json-errors-throw-on-json-error)
 - [Indent Aware Heredoc/Nowdoc {#indent-aware-docs}](#indent-aware-heredocnowdoc-indent-aware-docs)
@@ -18,7 +18,7 @@ features, but there are a few that I am especially excited about.
 
 [RFC](https://wiki.php.net/rfc/json_throw_on_error)
 
-Parsing JSON is a common requirement for any API. Up to this point, the common pattern was to attempt to decode the
+Parsing JSON is a common requirement for most APIs. Until 7.3, the common pattern was to attempt to decode the
 input, check for an error, and then proceed.
 
 ```php
@@ -35,9 +35,9 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 // Do things with my JSON
 ```
 
-This wasn't an awful experience, but I'll be honest, I often forgot that it was needed at all and would have to go back
-and add the check after I saw something go wrong. Now, we are presented a new option in the `JSON_THROW_ON_ERROR` option.
-This allows developers to work in a standard `try/catch` pattern when parsing JSON.
+This was not an awful experience, but it does not match the `try/catch` pattern that most developers expect in PHP,
+making it difficult to remember to do this check. We are now presented a new option in the `JSON_THROW_ON_ERROR` option.
+This allows developers to tell PHP to throw an exception if it is unable to decode the JSON payload.
 
 ```php
 <?php
@@ -58,13 +58,12 @@ try {
 
 [RFC](https://wiki.php.net/rfc/flexible_heredoc_nowdoc_indentation)
 
-Sometimes you need a multiline string, for example, writing database migrations in SQL or when writing code that
-generates code, so you bring in a Heredoc or Nowdoc variable. The downside of this is that if within
-this structure, any indentation is significant for the resulting variable value. So if you need to ensure that the string
-has no indentation, then you must drop it in your code. This can make your code difficult to read for you and other
-developers on your team.
+A common use case I have found for writing heredoc/nowdoc styled string is when writing database queries or writing
+code that will ultimately generate more code. The downside of this pattern is that within my heredoc/nowdoc, I have to
+drop the natural indentation of my outer code to ensure the indentation of whatever is generated is correct, making the
+whole file more difficult to read.
 
-A class that generates a new PHP class, might look something like the below. Because the block of text should not be
+A class that generates a new class, might look something like the below. Because the block of text should not be
 indented in the resulting file, we have to shift the entire text completely to the left, ruining the clean indentation
 of the `ClassGenerator` class.
 
@@ -89,7 +88,7 @@ NEWCLASS;
 }
 ```
 
-With the new syntax, the indentation of the closing marker defines the amount of indentation that should be **removed**
+With the new syntax, the indentation of the closing marker defines the amount of indentation that should be removed
 from the resulting string. Allowing our new class to look like this.
 
 ```php
@@ -118,9 +117,9 @@ class ClassGenerator
 [RFC](https://wiki.php.net/rfc/trailing-comma-function-calls)
 
 This one is pretty straightforward: function and method calls can now include a trailing comma. This has been allowed in
-arrays, and I use it heavily. I appreciate having this option in multiline arrays, because it removes the possibility that
-I might attempt to add a new line to the array and forgetting to add the comma. The same is true for why I am excited to
-have this feature in functions, especially variadic functions.
+arrays, and I use it in my projects as a standard convention. I appreciate having this option in multiline arrays because
+it removes the possibility that I might attempt to add a new line to the array and forget to add the comma. The same 
+is true for functions, especially variadic functions.
 
 ```php
 <?php
@@ -132,8 +131,8 @@ sprintf(
 )
 ```
 
-In the above example, if I attempt to just add a new line belong `'strings'`, I also need to remember to add the comma
-after `'strings'`. With PHP three, a trailing comma can be preemptively added and always maintained.
+In the above example, if I attempt to just add a new line below `'strings'`, I also need to remember to add the comma
+after `'strings'`. With PHP 7.3, a trailing comma can be preemptively added and always maintained.
 
 ```php
 <?php
@@ -144,3 +143,8 @@ sprintf(
     'strings',
 )
 ```
+
+Another time I have found a trailing comma useful is when generating code. Allowing the trailing comma means the
+developer has to be just a little less thought to handling the edge case of the last value in the list. For this reason,
+I'm hopeful the core team can eventually support trailing commas on the function/method declaration as well, but that
+was no included in the particular RFC.
