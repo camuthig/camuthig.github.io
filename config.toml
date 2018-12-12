@@ -11,10 +11,10 @@ googleAnalytics = ""
     accent = "teal"
     showBorder = true
     backgroundColor = "white"
-    font = "Raleway" # should match the name on Google Fonts!
+    font = "Roboto" # should match the name on Google Fonts!
     highlight = true
     highlightStyle = "darcula"
-    highlightLanguages = ["go", "kotlin", "scala"]
+    highlightLanguages = ["go", "kotlin", "scala", "yaml"]
 
 [[menu.main]]
     url = "/"
