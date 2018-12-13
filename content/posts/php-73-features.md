@@ -2,21 +2,20 @@
 title: "PHP 7.3 Features I'm Excited About"
 date: 2018-12-19
 tags: ["php"]
-draft: true
 ---
 
 By the time this post is live, PHP 7.3 should already have dropped. I am very happy with the quality of work released
-by the core team since the release of 7.0. They have built a number of amazing features into the language that focus on
+by the core team since 7.0. They have built a number of amazing features into the language that focus on
 developer productivity, which makes a difference when maintaining a large project. PHP 7.3 follows suit, including
 several great features, but there are a few that I am especially excited about.
 
-- [Throw on JSON Errors {#throw-on-json-error}](#throw-on-json-errors-throw-on-json-error)
-- [Indent Aware Heredoc/Nowdoc {#indent-aware-docs}](#indent-aware-heredocnowdoc-indent-aware-docs)
-- [Trailing Commas in Function/Method Calls {#trailing-commas-in-function-calls}](#trailing-commas-in-functionmethod-calls-trailing-commas-in-function-calls)
+- [Throw on JSON Errors](#throw-on-json-error)
+- [Indent Aware Heredoc/Nowdoc](#indent-aware-docs)
+- [Trailing Commas in Function/Method Calls](#trailing-commas-in-function-calls)
 
 ### Throw on JSON Errors {#throw-on-json-error}
 
-[RFC](https://wiki.php.net/rfc/json_throw_on_error)
+#### [RFC](https://wiki.php.net/rfc/json_throw_on_error)
 
 Parsing JSON is a common requirement for most APIs. Until 7.3, the common pattern was to attempt to decode the
 input, check for an error, and then proceed.
@@ -56,14 +55,14 @@ try {
 
 ### Indent Aware Heredoc/Nowdoc {#indent-aware-docs}
 
-[RFC](https://wiki.php.net/rfc/flexible_heredoc_nowdoc_indentation)
+#### [RFC](https://wiki.php.net/rfc/flexible_heredoc_nowdoc_indentation)
 
-A common use case I have found for writing heredoc/nowdoc styled string is when writing database queries or writing
-code that will ultimately generate more code. The downside of this pattern is that within my heredoc/nowdoc, I have to
-drop the natural indentation of my outer code to ensure the indentation of whatever is generated is correct, making the
+A common use case I have found for writing heredoc/nowdoc styled strings is when writing
+code that generates more code. The downside of this pattern is that within the heredoc/nowdoc, I have to
+drop the natural indentation of the outer code to ensure the indentation of whatever is generated is correct, making the
 whole file more difficult to read.
 
-A class that generates a new class, might look something like the below. Because the block of text should not be
+Such a piece of code, might look something like the below. Because the block of text should not be
 indented in the resulting file, we have to shift the entire text completely to the left, ruining the clean indentation
 of the `ClassGenerator` class.
 
@@ -114,7 +113,7 @@ class ClassGenerator
 
 ### Trailing Commas in Function/Method Calls {#trailing-commas-in-function-calls}
 
-[RFC](https://wiki.php.net/rfc/trailing-comma-function-calls)
+#### [RFC](https://wiki.php.net/rfc/trailing-comma-function-calls)
 
 This one is pretty straightforward: function and method calls can now include a trailing comma. This has been allowed in
 arrays, and I use it in my projects as a standard convention. I appreciate having this option in multiline arrays because
@@ -145,6 +144,6 @@ sprintf(
 ```
 
 Another time I have found a trailing comma useful is when generating code. Allowing the trailing comma means the
-developer has to be just a little less thought to handling the edge case of the last value in the list. For this reason,
+developer has to be just a little less careful handling the edge case of the last value in the list. For this reason,
 I'm hopeful the core team can eventually support trailing commas on the function/method declaration as well, but that
-was no included in the particular RFC.
+was not included in this particular RFC.
