@@ -2,6 +2,9 @@
 
 .DEFAULT_GOAL := help
 
+init: ## Set up the project
+	git submodule update --init themes/minimal
+
 post: ## Create a new post. Pass the name as "name=x"
 	hugo new posts/${name}
 
