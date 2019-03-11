@@ -1,19 +1,18 @@
 ---
-title: "Remote Working on Different Days"
+title: "On Working Remote and Time Zones"
 date: 2019-03-13
 tags: ["remote-work"]
-draft: true
 ---
 
-Just over one month ago, my wife and I moved to Australia, temporarily. We will be here for three or four months, and during
+Just over one month ago, my wife and I moved to Australia temporarily. We will be here for three or four months, and during
 that time, I will continue working for my company back in the United States. This means I am working remotely, but more
 importantly that I am working with a large time difference between myself and my coworkers. My coworkers are split between
-the East Coast (engineering team) and West Coast (product teams) of the United States, so I am 8.5/5.5 hours behind my coworkers - but I'm on the next day.
-So when I start work on Tuesday morning at 7 AM, my East Coast counterparts are seeing 3:30 PM, Monday. With Daylight Saving 
+the East Coast (engineering team) and West Coast (product teams) of the United States, so I am 8.5 to 5.5 hours behind my coworkers - but I'm on the next day.
+So when I start work on Tuesday morning at 7 AM, my East Coast counterparts are seeing 3:30 PM, Monday. With Daylight Saving
 Time around the corner, that difference will increase by two hours over the next three weeks.
 
-Such a large time difference creates some challenges, stemming primarily from two issues. First, it is hard to find overlap 
-with my coworkers on the East Coast, and second, it can be overwhelming to start my day when everyone else is in full 
+Such a large time difference creates some challenges, stemming primarily from two sources. First, it is hard to find overlap
+with my coworkers on the East Coast, and second, it can be overwhelming to start my day when everyone else is in full
 swing already.
 
 To tackle the first issue, I start my day around 6:00 AM, giving me ~2.5 hours of overlap with the East Coast
@@ -23,8 +22,8 @@ code I need to review as well as code I wrote that needs reviewing. I don't beli
 overall velocity of the team, but it can make it feel very slow to go from writing code to releasing it to production, as
 there is often a one day turn arond time.
 
-This overlap will be shorter when Australia's Daylight Saving Time goes into effect, making my 6:00 AM start into a 4:30 PM 
-start on the East Coast. I am considering trying a split day at that point, getting online between 10:00 
+This overlap will be shorter when Australia's Daylight Saving Time goes into effect, making my 6:00 AM start into a 4:30 PM
+start on the East Coast. I am considering trying a split day at that point, getting online between 10:00
 PM and 12:00 AM (8:30 AM - 10:30 AM ET) to overlap with the East Coast and then start my normal day a bit later, still getting
 some overlap with the West Coast.
 
