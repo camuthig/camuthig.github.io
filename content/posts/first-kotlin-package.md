@@ -11,7 +11,7 @@ me a good deal of experience with using Kotlin to solve problems.
 I'm calling the package [credentials](https://bintray.com/camuthig/maven/credentials-core), and it is built to resemble the `credentials` feature of Ruby on Rails. The library
 allows a developer to securely store credentials in a file that is located as part of the problem, for example
 `resources/credentials.conf.enc`. These are encrypted using a generated key, that should be included in the projects
-`.gitignore`. The format of the files follws HOCON, and is parseable using the [Typesafe Config]() library.
+`.gitignore`. The format of the files follws HOCON, and is parseable using the [Light Config](https://github.com/lightbend/config) library.
 
 Along with the core library, I have also published a [Gradle plugin](https://bintray.com/camuthig/maven/credentials-gradle)
 to support mantaining the file using a Gradle project as well as to use the credentials as part of the Gradle biuld.
