@@ -8,10 +8,10 @@ I've finished and released my first Kotlin package to Bintray. It is still rough
 solving problems that I am facing while building an applicatin with Ktor. Developing it has also given
 me a good deal of experience with using Kotlin to solve problems.
 
-I'm calling the package [credentials](https://bintray.com/camuthig/maven/credentials-core), and it is built to resemble the `credentials` feature of Ruby on Rails. The library
-allows a developer to securely store credentials in a file that is located as part of the problem, for example
-`resources/credentials.conf.enc`. These are encrypted using a generated key, that should be included in the projects
-`.gitignore`. The format of the files follws HOCON, and is parseable using the [Light Config](https://github.com/lightbend/config) library.
+I'm calling the package [credentials](https://bintray.com/camuthig/maven/credentials-core), and it is inspired by the `credentials` feature of Ruby on Rails.
+The library allows a developer to securely store credentials in a file that is located as part of the problem, for example
+`resources/credentials.conf.enc`. These are encrypted using a generated key, that should be included in the project's
+`.gitignore`. The format of the file follows HOCON, and is parseable using the [Lightbend Config](https://github.com/lightbend/config) library.
 
 Along with the core library, I have also published a [Gradle plugin](https://bintray.com/camuthig/maven/credentials-gradle)
 to support mantaining the file using a Gradle project as well as to use the credentials as part of the Gradle biuld.
@@ -33,10 +33,10 @@ flyway {
 }
 ```
 
-The `credentials` is presented as an extension to Gradle, which supports autocomplete in IntelliJ, and give access to a
+The `credentials` symobole is Gradle extension, supporting autocomplete in IntelliJ, and gives access to a
 `getString` as well as a `getStringOrElse` function, making it easy to pull in my credentials.
 
-The other use case I had in mind was accessing the same credentials within the Ktor application that I wanted to build.
+The other use case I had in mind was accessing the same credentials within the Ktor application that I am building.
 I'm still working out the nuances of the developer experience on this one, but as it stands now, building a datasource to
 access my Postgres instance looks something like
 
@@ -69,11 +69,11 @@ fun createDataSource(): DataSource {
 
 The current `CredentialsStore` interface only defines a `load` function, which reads the files from the system and parses it
 into a `Config` object. It doesn't make a ton of sense to continue reading the file from the system, however, so I plan to
-iterate on the library to provider a better developer interaction.
+iterate on the library to provide a better developer interaction.
 
 The processing of writing these packages was really enjoyable, and the Kotlin developer experience is great. I had trouble
 working with Gradle throughout the process, however. I think it was partially my fault, for trying to do things that Gradle
-wasnt meant to do or things that were more complex than they needed to be. I also feel that Gradle is still maturing into its
+was not meant to do or things that were more complex than they needed to be. I also feel that Gradle is still maturing into its
 Kotlin DSL, and it can be difficult to find appropriate support online when most experience over the last several years has
 centered around their Groovy DSL.
 
