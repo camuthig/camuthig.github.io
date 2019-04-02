@@ -1,28 +1,31 @@
 ---
 title: "Social Authentication with Ktor"
 date: 2019-04-03
-draft: true
+tags: ["kotlin"]
 ---
 
-I'm continuing to explore Kotlin as a server-side web development language and getting experience with the
-available tools in that realm. My goal is to build a GraphQL server based on a simple, but real, domain. The first
-step along the way in building this server is to build authentication. The end goal of this exercise is to build out
-an authentication system based on OAuth2, using Google as the provider. Much of the process is obvious for anyone
-familiar with Kotlin or Ktor, but as a first project, I learned a good deal along the way. The project, at the time
-of writing this post, can be found [here](https://github.com/camuthig/ktor-social-graphql/tree/49670770fcd30deaa53ff28d475cd2edf4c9bb2a).
-I will continue working on the project as time goes on, and have other posts planned to follow the experience.
+As I continue to explore Kotlin as a server-side web development language and get experience with the
+available tools in that realm, I plan to build out a simple application, testing out a number of different tools
+and patterns. The application will be a GraphQL server for a collaborative To Do list (sounds familiar, am I right?),
+running on Ktor. The project can be found [here](https://github.com/camuthig/ktor-social-graphql).
 
-Ktor offers the beginnings of a good [OAuth2](https://ktor.io/servers/features/authentication/oauth.html) authentication mechanism
-as a feature out of the box. Where Ktor stops providing the developer tools is after receiving the OAuth access token
-and deciding what to do next with it. For my use case, I don't want to continue authenticating any additional requests
-using this token, so I need to take the token, verify it with the identity provider, getting the user's information,
-and finally add that to my own system's database and creating a new token my system knows about.
+This post covers my implementation of an authentication mechanism for the GraphQL server, focusing on how a user will
+log into the application. The code specific to this post is based on the project
+[at this commit](https://github.com/camuthig/ktor-social-graphql/tree/49670770fcd30deaa53ff28d475cd2edf4c9bb2a). Going
+forward, I will try to do a better job of making pull requests within the project at each phase to make it a bit easier
+to see what I am doing along the way.
 
-Phew. That's still a lot. Let's look at the first part: receiving the token and verifying the identity.
 
-This requires a few pieces. First, we need to define a route at which the login request will begin and redirect
-back to, following the OAuth protocol. This is pretty straight forward and can be defined in such a way to work
-for any number of identity providers using the [Location feature](https://ktor.io/servers/features/locations.html).
+Ktor offers the beginnings of a good [OAuth2](https://ktor.io/servers/features/authentication/oauth.html) authentication
+mechanism out of the box. Ktor stops providing the developer tools after receiving the OAuth access token, though. It
+is up to each developer to determine what should be done with this token. For my use case, I don't want to authenticate any
+additional requests using this token, so I need to verify it with the identity provider (Google), which will yield the
+user's information, and then I want add that to my own system's database and creating a new token my system knows about. From
+there I can create my own token and return that to the consumer of my API.
+
+Let's get into it then, starting out by verifying the OAuth access token and retrieving the user's personal information.
+First, we need to define a route at which the login request will begin and redirect back to, following the OAuth protocol.
+This is can be defined in such a way to work for any number of identity providers using Ktor's [Location feature](https://ktor.io/servers/features/locations.html).
 
 ```kotlin
 @Location("/login/{provider}/callback")
@@ -30,7 +33,8 @@ data class LoginCallback(val provider: String)
 ```
 
 Next we need to define the OAuth handler that will accept requests at `/login/{provider}/callback` and implement the
-authentication logic.
+authentication logic. You can see here that I have defined my authentication routes as an extension function on the
+`Routing` object. This makes it easier for me to add the whole collection of routes to my Ktor application later.
 
 ```kotlin
 fun Routing.authRoutes(userRepository: UserRepository) {
@@ -77,12 +81,15 @@ fun Routing.authRoutes(userRepository: UserRepository) {
 }
 ```
 
-This logic accepts, the request, finds our OAuth provider configuration based on the `provider` parameter on the URL,
-gets the user identity details from the OAuth provider, finds or creates the user in our local data store, and finally
-returns out a JWT for further authentication. The JWT is unimportant now, and I will likely change that later. There
-will be more discussion about it in another post.
+This logic is missing some error handling, but gets the code to where it needs to be with regards to verifying the user's
+identity. The steps involved are:
 
-The important part here is just a fews lines of code.
+1. Find the OAuth provider configuration using the `provider` parameter in the URL
+1. Get the user's identity from the OAuth provider
+1. Find the user in our own system, creating a new user if they do not yet exist
+1. Generating our own token based on the found user
+
+The most important part here is just a fews lines of code.
 
 ```kotlin
 val socialIdentity = oauthConfiguration.second.getIdentity(principal.accessToken)
@@ -95,10 +102,10 @@ if (user == null) {
 ```
 
 This block of code has two encapsulations I created to make interacting with my authentication module easier. The first
-is the `SocialIdentityProvider`. This encapsulation allows my code to succinctly define sending an OAuth token to an
-identity provider (think Google, GitHub, Twitter, etc.), and retrieve back a subset of important data for my own
-authentication module. The interface and data class are straight forward, and the concise nature of these definitions is
-likely my favorite part of programming with Kotlin.
+is the `SocialIdentityProvider` (`oauthConfiguration.second.getIdentity` in this case). This encapsulation allows my
+code to succinctly define sending an OAuth token to an identity provider, and retrieve back a subset of important data for my
+own authentication module. The interface and data class are straight forward, and the concise nature of these definitions is
+one of my favorite parts of programming with Kotlin.
 
 ```
 data class SocialIdentity(val id: String, val name: String, val nickname: String, val email: String, val avatar: String)
@@ -108,13 +115,13 @@ interface SocialIdentityProvider {
 }
 ```
 
-The `GoogleIdentityProvider` can be found [here](https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/social/GoogleIdentityProvider.kt).
-It could be a bit more complete, but for the moment, takes care of our needs.
+The `GoogleIdentityProvider` can be found [here](https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/social/GoogleIdentityProvider.kt). This code sends a request to Google's `userinfo` route and parses the response into a
+`SocialIdentity` object.
 
-The second encapsulation is the idea of a `UserRepository`. I have a hit or miss relationship with the [repository pattern](https://martinfowler.com/eaaCatalog/repository.html),
-but in the case of this instance, I believe it fits well, requiring a small API footprint and allowing for easier
-testing later down the road. Not all of the functions in the interface are needed just yet, but I have well defined
-plans for them, so they are already in there for me.
+The second encapsulation is the idea of a `UserRepository`. I have a love/hate relationship with the [repository pattern](https://martinfowler.com/eaaCatalog/repository.html),
+but I believe it fits well here, requiring a small API footprint and allowing for easier
+testing later down the road. You may notice that I don't use all of these functions yet, but I plan to going forward,
+and we will get back to that in a later post.
 
 ```kotlin
 interface UserRepository {
@@ -132,11 +139,9 @@ interface UserRepository {
 
 My [implementation of the repository](https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/repository/RequeryUserRepository.kt)
 uses [Requery](https://github.com/requery/requery). Requery has worked well, but I have already seen some issues around
-eager loading and navigating to relationships. I will most likely switch it out to a different implementation later,
-making the repository pattern really helpful here.
+eager loading and navigating to relationships (multiple queries where a single query would do, for example). I will most
+likely switch it out to a different implementation later, which is another benefit of the repository pattern.
 
-I encapsulated all of this into a [module](https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/Module.kt)
-and ["controller"](https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/Controller.kt) file, which is another
-part of Kotlin that I feel is well suited to development with Ktor. I skimmed over some of the implementation deails,
-such as configuring my OAuth provider, building the HTML for the login page, etc., so feel free to checkout the project
-for more details on the implementation.
+And now I have a working authentication system built in my Ktor server, using Google as my identity provider and returning a
+JWT once the user successfully logs in. The next phase of this project will be to define out the basis for the GraphQL
+server and hook this authentication mechanism into it.
