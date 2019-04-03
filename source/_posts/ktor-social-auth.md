@@ -3,7 +3,7 @@ extends: _layouts.post
 section: content
 title: "Social Authentication with Ktor"
 date: 2019-04-03
-tags: ["kotlin"]
+categories: ["kotlin"]
 ---
 
 

@@ -3,7 +3,7 @@ extends: _layouts.post
 section: content
 title: "First Kotlin Package"
 date: 2019-03-27
-tags: ["kotlin"]
+categories: ["kotlin"]
 ---
 I've finished and released my first Kotlin package to Bintray. It is still rough around the edges, but it is
 solving problems that I am facing while building an applicatin with Ktor. Developing it has also given
