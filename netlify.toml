@@ -1,0 +1,6 @@
+[build]
+
+PHP_VERSION=7.3
+
+command = "./vendor/bin/jigsaw build production"
+publish = "build_production"
