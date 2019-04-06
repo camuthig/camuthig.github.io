@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/camuthig/jigsaw-blog-default-categories.git",
-                "reference": "8e6c456394c56be1fe4ca701ff4fbda411c02d8f"
+                "reference": "cf5204e400490b62d0106dcc2005b3827bb4ef7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/camuthig/jigsaw-blog-default-categories/zipball/8e6c456394c56be1fe4ca701ff4fbda411c02d8f",
-                "reference": "8e6c456394c56be1fe4ca701ff4fbda411c02d8f",
+                "url": "https://api.github.com/repos/camuthig/jigsaw-blog-default-categories/zipball/cf5204e400490b62d0106dcc2005b3827bb4ef7a",
+                "reference": "cf5204e400490b62d0106dcc2005b3827bb4ef7a",
                 "shasum": ""
             },
             "require": {
@@ -41,7 +41,7 @@
                 }
             ],
             "description": "An event listener to generate default category pages on a Jigsaw blog",
-            "time": "2019-03-28T09:35:45+00:00"
+            "time": "2019-04-06T07:02:15+00:00"
         },
         {
             "name": "doctrine/inflector",
