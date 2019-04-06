@@ -113,7 +113,7 @@ code to succinctly define sending an OAuth token to an identity provider, and re
 own authentication module. The interface and data class are straight forward, and the concise nature of these definitions is
 one of my favorite parts of programming with Kotlin.
 
-```
+```kotlin
 data class SocialIdentity(val id: String, val name: String, val nickname: String, val email: String, val avatar: String)
 
 interface SocialIdentityProvider {
