@@ -16,7 +16,7 @@
 
     <p class="mb-6">
         My name is Chris Muthig, and I am a software developer with a passion for helping others get more out of technology.
-        I have had the opportunity to work in a number of different domains, and I'm always looking for new tools I can help build
+        I have had the opportunity to work in a number of different domains, and I'm always looking for new systems I can build
         to solve problems people face every day.
     </p>
     <p class="mb-6">
