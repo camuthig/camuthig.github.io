@@ -4,6 +4,10 @@ date: 2019-04-03
 tags: ["kotlin"]
 ---
 
+_Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing
+my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error
+handling. Please be review and understand any code before reusing it, and feel free to leave comments on the GitHub project_
+
 As I continue to explore Kotlin as a server-side web development language and get experience with the
 available tools in that realm, I plan to build out a simple application, testing out a number of different tools
 and patterns. The application will be a GraphQL server for a collaborative To Do list (sounds familiar, am I right?),
