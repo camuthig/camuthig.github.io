@@ -12,11 +12,16 @@ return [
         'posts' => [
             'author' => 'Chris Muthig', // Default author, if not provided in a post
             'sort' => '-date',
-            'path' => 'blog/{filename}',
+            'path' => 'posts/{filename}',
             'filter' => function ($post) {
                 return !$post->draft;
             }
         ],
+    ],
+
+    // default categories
+    'defaultCategories' => [
+        'path' => 'categories/{filename}'
     ],
 
     // helpers
