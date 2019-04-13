@@ -1,0 +1,38 @@
+{{ define "main" }}
+
+<main>
+	<div class="post">
+
+		<h1 class="post-title">{{ .Title }}</h1>
+		<div class="post-line"></div>
+
+		<div class="profile">
+			<div class="container">
+				<div class="item">
+					{{ .Content }}
+				</div>
+
+				<div class="item image-cropper">
+					<img class="profile-pic" src="/img/about_me.jpeg"></img>
+				</div>
+
+			</div>
+			<div class="social-container">
+				<div>
+					<a href="https://github.com/camuthig">
+						{{ partial "social_icon.html" "github" }}
+					</a>
+				</div>
+				<div>
+					<a href="https://www.linkedin.com/in/camuthig/">
+						{{ partial "social_icon.html" "linkedin" }}
+					</a>
+				</div>
+			</div>
+		</div>
+
+
+	</div>
+</main>
+
+{{ end }}

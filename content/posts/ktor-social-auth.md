@@ -2,6 +2,10 @@
 title: "Social Authentication with Ktor"
 date: 2019-04-03
 tags: ["kotlin"]
+summary: "As I continue to explore Kotlin as a server-side web development language and get experience with the
+available tools in that realm, I plan to build out a simple application, testing out a number of different tools
+and patterns. The application will be a GraphQL server for a collaborative To Do list (sounds familiar, am I right?),
+running on Ktor."
 ---
 
 _Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing
@@ -111,7 +115,7 @@ code to succinctly define sending an OAuth token to an identity provider, and re
 own authentication module. The interface and data class are straight forward, and the concise nature of these definitions is
 one of my favorite parts of programming with Kotlin.
 
-```
+```kotlin
 data class SocialIdentity(val id: String, val name: String, val nickname: String, val email: String, val avatar: String)
 
 interface SocialIdentityProvider {

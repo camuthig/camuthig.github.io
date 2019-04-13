@@ -1,9 +1,9 @@
-+++
-title =  "A Faktory Client in PHP"
-date =  2018-06-18T00:00:00-07:00
-tags = ["php"]
-draft = false
-+++
+---
+title:  "A Faktory Client in PHP"
+date:  2018-06-18
+tags: ["php"]
+draft: false
+---
 
 [Faktory](http://contribsys.com/faktory/) is a worker server created by Mike Perham, the same person who created
 [Sidekiq](https://sidekiq.org/). His aim in developing the tool is to bring the same best practices hashed out by

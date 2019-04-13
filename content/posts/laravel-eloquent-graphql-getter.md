@@ -1,13 +1,13 @@
-+++
-title =  "GraphQL Getters with Laravel Eloquent"
-date =  2018-05-29T21:37:20-07:00
-tags = ["laravel", "php", "graphql"]
-draft = false
-+++
+---
+title:  "GraphQL Getters with Laravel Eloquent"
+date:  2018-05-29
+tags: ["laravel", "php", "graphql"]
+draft: false
+---
 
 I recently began work on a proof-of-concept project I have been mentally shaping for some time now. In building this, I
 chose to stick with Laravel as a framework to build off of, as it is something I am familiar with, but I wanted to serve
-my application's API using GraphQL instead of normal Laravel resources. For the task, I chose the 
+my application's API using GraphQL instead of normal Laravel resources. For the task, I chose the
 [Laravel GraphQL](https://github.com/Folkloreatelier/laravel-graphql) package, as I am already familiar with the underlying
 GraphQL implementation. My data model is very simple, with only a few columns of data and one or two relationships, so I
 chose to stick with the most simple features of Eloquent in my implementation as well. Altogether, the GraphQL package
@@ -57,4 +57,4 @@ course.
 
 It is important to also note that while this solution provides automatic mappings from `Eloquent name -> GraphQL name`,
 it does not provide the inverse, and in my mutation and query resolvers, I am explicitly taking the input variables and
-mapping them to the snakecase names of my models as necessary. 
+mapping them to the snakecase names of my models as necessary.

@@ -1,15 +1,15 @@
 ---
 title: "Deploying a Hugo Blog with Travis CI"
-date: 2018-12-11T21:05:29-08:00
+date: 2018-12-11
 tags: ["blogging"]
 ---
 
 I have enjoyed using [Hugo](https://gohugo.io/) to build my blog, but I have not been happy with the deploy
 process to GitHub Pages. GitHub user pages always deploy the master branch of the project and also does not directly
-support Hugo. This means you need at least two branches to make this work, one for the source and one for the release. 
+support Hugo. This means you need at least two branches to make this work, one for the source and one for the release.
 Up to this point, I was using the [pattern suggested by the Hugo team for this]
-(https://gohugo.io/hosting-and-deployment/hosting-on-github/#github-user-or-organization-pages). 
-This involves having one repository for the source of my blog, and then pushing the built files to a subproject that 
+(https://gohugo.io/hosting-and-deployment/hosting-on-github/#github-user-or-organization-pages).
+This involves having one repository for the source of my blog, and then pushing the built files to a subproject that
 pointed to the repository that is deployed to GitHub Pages. I didn't love that this required having two repositories,
 and the process to release was automated with a script but wasn't as clean as I would have liked. I had a chance,
 recently, to use the [GitHub Pages deploy](https://docs.travis-ci.com/user/deployment/pages/) with Travis CI, and
