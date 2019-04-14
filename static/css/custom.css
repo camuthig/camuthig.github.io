@@ -1,12 +1,4 @@
-html {
-    font-family: "Roboto", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
-}
-
-.post-title {
-    font-family: "Roboto", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
-}
-
-.post-info {
+html, .post-title, .post-info, .catalogue-time, footer {
     font-family: "Roboto", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
@@ -52,33 +44,37 @@ p {
     font-weight: bolder;
 }
 
-.profile .container {
+.profile .profile-container {
     display: flex;
     flex-wrap: wrap-reverse;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
 }
 
-.profile .container .item {
-    max-width: 400px;
+.profile .profile-container .item {
+    padding: 5px 5px;
+    max-width: 32rem;
 }
 
-.image-cropper {
-    width: 250px;
-    height: 250px;
-    position: relative;
-    overflow: hidden;
-    border-radius: 50%;
-}
-
-.profile-pic {
+.profile-pic-container {
+    display: flex;
+    width: 80%;
+    justify-content: center;
     align-content: center;
+    flex-grow: 1;
+}
+
+.profile-pic-container:after {
+    content: "";
+    display: block;
     display: inline;
-    margin: 0 auto;
-    margin-left: -25%;
-    height: 100%;
-    width: auto;
+}
+
+.profile-pic-container img {
+    border-radius: 50%;
+    max-width: 300px;
+    margin: auto;
 }
 
 .social-container {
