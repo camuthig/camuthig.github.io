@@ -1,7 +1,6 @@
 ---
-title: "Graphql Server Built on Ktor"
-date: 2019-05-01
-draft: true
+title: "GraphQL Server Built on Ktor"
+date: 2019-04-24
 tags: ["kotlin", "graphql"]
 ---
 
@@ -16,12 +15,15 @@ building the GraphQL server and schema as well as accessing the authenticated us
 context.
 
 The first step is to finalize how the web client will provide the server with the JWT created by our authentication module.
-I chose to use a session cookie because it is simple and because the API will only be consumed by third-party clients,
-allowing me to assume I won't have any CORS issues. In the auth module I [installed
+I chose to use a session cookie because it is simple and because the API will only be consumed by my own client, if any,
+allowing me to assume I won't have any CORS issues. I [installed
 the session feature](https://github.com/camuthig/ktor-social-graphql/pull/2/files#diff-083499960a6541b6c22d276b2fd32672R38)
-and configured it to [verify the JWT stored on the session](https://github.com/camuthig/ktor-social-graphql/pull/2/files#diff-083499960a6541b6c22d276b2fd32672R73).
+in the auth module and configured it to [verify the JWT stored on the session](https://github.com/camuthig/ktor-social-graphql/pull/2/files#diff-083499960a6541b6c22d276b2fd32672R73).
 Within the validation phase, I create a new `UserPrincipal` that wraps a `User` instance, giving any authenticated
 call quick access to the current user.
+
+(Since originally writing this code, I learned a more [idiomatic](https://github.com/camuthig/ktor-social-graphql/blob/138956f762c8865eaf67f9457af541b9483dc90d/src/auth/Module.kt#L67-L79)
+way to implement the same logic, and I really like the flow.)
 
 ```kotlin
     install(Sessions) {
