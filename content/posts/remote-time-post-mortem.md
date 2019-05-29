@@ -26,7 +26,7 @@ question specific to me, they could always send me a direct message at any time 
 available, the message could sit in the private channel until I was next online. When I logged on, I used Slack's "unread
 messages" channel to go through each message individually, responding directly or in a public channel if it was appropriate.
 This allowed me to treat Slack more like an email inbox than as a realtime chat mechanism. I believe Slack isn't the
-ideal tool to solve this problem and would be curious to explore other tools, like Base Camp, but that would require a shift in
+ideal tool to solve this problem and would be curious to explore other tools, like Basecamp, but that would require a shift in
 my whole company's, or at least my team's, patterns.
 
 Along the same lines of asynchronous messaging, I found it much more important to schedule time to read through any pull requests
@@ -58,7 +58,7 @@ However, because of the time difference, I was generally unable to attend any of
 Instead I read the recaps of these gatherings, which was helpful but didn't create the same connection for me. We are working on
 ways to better record these meetings, allowing for anyone to watch them later, if they were unable to attend for whatever
 reasons. I think this could really help, and I am excited to dig into the concept. With relatively little overlap with my coworkers,
-it was also more difficult to shoot the breeze and participate in "water cooler" talk on Slack. I've heard of Base Camp's company
+it was also more difficult to shoot the breeze and participate in "water cooler" talk on Slack. I've heard of Basecamp's company
 practice of posting things about what you did over the weekend each week, and think something like this could help others as well.
 
 All in all, I appreciated my opportunity to live outside of the States and continue working with my team, and I have learned a lot
