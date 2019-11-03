@@ -1,45 +1,52 @@
 ---
 title: "Remapping Linux Modifiers with XKB"
-date: 2019-10-13
+date: 2019-11-02
 tags: ["linux"]
-draft: true
+draft: false
 summary: "Switching to Linux from MacOS can mean relearning key bindings. To make this easier I decided to remap
 my modifier keys to allow me to continue using MacOS bindings in certain cirumstances. I quickly learned that it is not
 always easy to make these remappings, though."
 ---
 
+# tl;dr
+
+I remapped my keys using xkb resulting in Caps Lock being Super and the left Windows key being meta. This allowed me to
+use Gnone global navigation shortcuts while still using MacOS bindings in my JetBrains IDEs.
+
+Xkb can be really difficult to work with, so hopefully for anyone else hoping to accomplish a similar goal will be
+able to use some of the information here to save some time. My xkb symbols file can be found
+[here](https://github.com/camuthig/env/commit/76cb79b61a657784e139e228035d263e558be3ef).
+
+# How I Got There
+
 I find myself more frequently working on my Linux laptop, running PopOS, transitioning from a Macbook Pro.
 A pain point in this transition is breaking the muscle memory regarding shortcuts that I built over
 the years that make repetitive movements efficient. I decided that I like the MacOS hotkeys for the JetBrains suite of
-products, which I use daily, so I set off this week to find a way to allow me to use those without breaking the rest of
+products, which I use daily, so I set off over the last weeks to find a way to allow me to use those without breaking the rest of
 the Linux ecosystem.
 
-The MacOS shortcuts in JetBrains rely on the `cmd` key, which is considered `meta` in Linux, so I knew I at least needed
-to get `meta` mapped to a key I could easily access. Because I'm already used to this key being the Windows key on my
-keyboard, I decided to place it there. Unfortunately, this is also the `super` key in the Linux ecosystem, which
-controls most of the navigation and global hotkeys. So along with mapping `meta` to the Windows key, I also needed to
-find a way to still access the global hotkeys. I decided a good way to do this was to leverage my currently useless
-Caps Lock as a `hyper` key and remap the common Linux mappings to use `hyper` instead of `super`. In testing these changes
-I found there to be some global hotkeys leveraging `super` that I couldn't figure out how to remap to another key, though.
-So on top of moving the commands to use `hyper` instead of `super`, I also decided to remap `super` to a different key
-such that hitting the Windows key wouldn't accidentally collide with other effects.
+My first thought, and success, was to convert my Caps Lock key to a Hyper key using Xmodmap. I quickly learned that using Xmodmap
+wasn't going to be an option based on recent changes to [how Gnome loads keymappings](https://bugzilla.redhat.com/show_bug.cgi?id=873656).
+With that, my next plan was to use xkb to accomplish the same thing.
 
-So the final goal was:
+It took a while, but I was able to get a xkb mapping working to this end. It allowed me to remap Caps Lock to hyper, and
+I also remapped the Windows key to be only meta, instead of also super which is the default within Gnome. Removing super
+from the windows key ensured that any hotkeys that I did not or could not remap to hyper would not cause unwanted collisions.
+As part of this exploration process, I began to dig into programmable keyboards as well, getting excited about the possibility
+to solve my problems more thoroughly in that way.
 
-- Caps Lock -> Hyper
-- Left Windows -> Meta
-- Right Alt -> Super (I don't use right alt often otherwise)
+I just received a new keyboard, programmable via QMK, and spent the day exploring possibilities with it. What I realized
+along the way is that I need to find a solution that combines the software solution with the QMK solution. A solution that
+would allow me to work efficiently from my new keyboard or from directly on the laptop.
 
-I originally tackled this problem using xmodmap, as there were a number of solutions online for just this. The solution
-worked perfectly, however, I kept losing the mapping every time the computer went to sleep and would have to run
-`xmodmap ~/.Xmodmap` manually to get them back.
+The first challenge in this was that the hyper key in Linux is a virtualized key. However, with QMK, the hyper modifier
+is the actual modifer (combination of all other modifier keys). So I had to rethink my xkb solution. I bang my head on
+it for longer than I would like to admit before I realized that since I moved super off of the windows key, I could just
+as easily use that instead of hyper on the Caps Lock for the Gnome global shortcuts. The end result being my windows
+key being mapped to meta and my Caps Lock key mapped to super. My new keyboard is a Planck, so for easy access, I
+configured the escape key to act as super on hold and escape on tap.
 
-I am running PopOS, which uses Gnome and X11 under the hood. When digging into what might be wrong, I learned that the
-[Gnome system stopped loading the `.Xmodmap` some time ago](https://bugzilla.redhat.com/show_bug.cgi?id=873656). The
-correct solution was to use xkb mappings instead, so I started digging into how to do that.
-
-Long story short, I really dislike xkb and still don't really understand what is going on. I do have a passable
-solution though. So let's cover what I did.
+# Getting the xkb Mapping Right
 
 **Warning Making changes to your xkb files can cause the X server boot to crash, resulting in your keyboard not working
 on the login page for PopOS as or the GUI just not loading.** I got myself into this spot once. I was able to get the system
@@ -53,7 +60,7 @@ This file is self documenting, so I won't go into what each part is doing here.
 that looks like `! option = symbol`
 1. I updated the `/usr/share/X11/xkb/rules/evdev.lst` file to include the line
 {{< highlight php "linenos=" >}}
-mymods               Add custom modifier mappings for hyper, super, and meta
+mymods               Add custom modifier mappings for super and meta
 {{< / highlight >}}
 directly under the line that looks like `! option`
 1. I added the following XML in `/usr/share/X11/xkb/rules/evdev.xml` nested under the `<group>` inside of `<optionList>`
@@ -63,7 +70,7 @@ directly under the line that looks like `! option`
       <option>
         <configItem>
           <name>mymods</name>
-          <description>Add custom modifier mappings for hyper, super, and meta</description>
+          <description>Add custom modifier mappings for super and meta</description>
         </configItem>
       </option>
 ```
