@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Chris Muthig</title>
+    <link>https://camuthig.dev/</link>
+    <description>Recent content on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 10 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Building Custom Django Fields</title>
+      <link>https://camuthig.dev/posts/django_drf_custom_object_id_field/</link>
+      <pubDate>Sun, 10 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/django_drf_custom_object_id_field/</guid>
+      <description>I recently needed to implement a special kind of field in Django Rest Framework that turned out to be a fun experiment. I recreated this in a simple Django application, and the bulk of the DRF-related code can be found here.
+First, the API used a hashed ID. So the primary key from the database was taken, additional information added to it and then hashed.
+Second, the API to set the relationship value behaved differently than when reading it.</description>
+    </item>
+    
+    <item>
+      <title>Python Version and Dependency Management</title>
+      <link>https://camuthig.dev/posts/python-version-dependency-management/</link>
+      <pubDate>Tue, 21 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/python-version-dependency-management/</guid>
+      <description>I have only been a professional Python developer for three months. I made this transition after several years in the PHP ecosystem, and I am still learning some nuances of Python. One area I have found very challenging is version and dependency management. I think it has been hard for me because it was a pretty simple concept in PHP. For versions, I didn&amp;rsquo;t often change them, but when I did, I would usually unlink the current PHP binaries and link up new ones through some sort of script.</description>
+    </item>
+    
+    <item>
+      <title>Developing on Windows Using WSL 2</title>
+      <link>https://camuthig.dev/posts/windows-development-wsl2/</link>
+      <pubDate>Sat, 18 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/windows-development-wsl2/</guid>
+      <description>I just ran across this draft on my machine after several months (I wrote this in January), so hopefully it is clean enough and I believe the information is still up to date.
+Below are my thoughts and experience setting up and testing the use of Window&amp;rsquo;s WSL 2 system for development work. The findings are based on running a production-ready Django application, but only doing minor modifications to test how the development flow works.</description>
+    </item>
+    
+    <item>
+      <title>2019 Year In Review</title>
+      <link>https://camuthig.dev/posts/2019-in-review/</link>
+      <pubDate>Sat, 21 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/2019-in-review/</guid>
+      <description>My 2019 is best described as focusing on soft skills and taking on new roles in my career. I was able to work on a number of exciting projects as well, but those were natural progressions from projects I worked on previously, whereas so much of the soft skills were brand new, challenging experiences.
+Remote Work For the first time in my career, I spent 2019 working 100% remotely. This was first from Australia from January to May, and then from California for the remainder of the year.</description>
+    </item>
+    
+    <item>
+      <title>Remapping Linux Modifiers with XKB</title>
+      <link>https://camuthig.dev/posts/remapping-linux-modifiers-with-xkb/</link>
+      <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/remapping-linux-modifiers-with-xkb/</guid>
+      <description>tl;dr I remapped my keys using xkb resulting in Caps Lock being Super and the left Windows key being meta. This allowed me to use Gnone global navigation shortcuts while still using MacOS bindings in my JetBrains IDEs.
+Xkb can be really difficult to work with, so hopefully for anyone else hoping to accomplish a similar goal will be able to use some of the information here to save some time.</description>
+    </item>
+    
+    <item>
+      <title>Pattern Matching CLI commands with Rust</title>
+      <link>https://camuthig.dev/posts/rust-cli-pattern-matching/</link>
+      <pubDate>Thu, 06 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/rust-cli-pattern-matching/</guid>
+      <description>I&amp;rsquo;m building a CLI tool using Rust, and I ran into some difficulties figuring out the best way to work with the structopts crate using subcommands to break out my logic into separate functions. I suspect this is because I am new to Rust, but I felt it was worth documenting the challenge and solution.
+I&amp;rsquo;ll use a fake tool to demonstrate the pattern I used. Let&amp;rsquo;s say the tool is called ecko, and it is used to print two different kinds of messages: hellos and goodbyes.</description>
+    </item>
+    
+    <item>
+      <title>Remote Time Zones Post Mortem</title>
+      <link>https://camuthig.dev/posts/remote-time-post-mortem/</link>
+      <pubDate>Wed, 29 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/remote-time-post-mortem/</guid>
+      <description>I finished my time working from Australia on May 10, making it just over three months of that I spent working from a siginificantly different (8+ hours) time zone than many of my coworkers. In my last post discussing this topic, I covered some of the pain points this time difference created, and I would like to discuss what worked well for me and what might have been better during that time.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL Server Built on Ktor</title>
+      <link>https://camuthig.dev/posts/ktor-graphql-server/</link>
+      <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/ktor-graphql-server/</guid>
+      <description>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error handling. Please review and understand any code before reusing it, and feel free to leave comments on the GitHub project
+With authentication in place on the Ktor server, we can move on to building out the skeleton of the GraphQL server, incorporating the authenticated user.</description>
+    </item>
+    
+    <item>
+      <title>Creating Custom Database Connections in Lumen</title>
+      <link>https://camuthig.dev/posts/lumen-custom-database-connection/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/lumen-custom-database-connection/</guid>
+      <description>A friend recently came to me with a question on how to create a database connection in Lumen without using using external services to define the configuration values of the connection. I made some suggestions, but it was an interesting quesiton so I decided to try tackling a sample myself as well.
+I am not suggesting that the pattern described below for retrieving configuration values is a good idea. However, sometimes as developers we are required to work within certain constraints we cannot control.</description>
+    </item>
+    
+    <item>
+      <title>Social Authentication with Ktor</title>
+      <link>https://camuthig.dev/posts/ktor-social-auth/</link>
+      <pubDate>Wed, 03 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/ktor-social-auth/</guid>
+      <description>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error handling. Please be review and understand any code before reusing it, and feel free to leave comments on the GitHub project
+As I continue to explore Kotlin as a server-side web development language and get experience with the available tools in that realm, I plan to build out a simple application, testing out a number of different tools and patterns.</description>
+    </item>
+    
+    <item>
+      <title>First Kotlin Package</title>
+      <link>https://camuthig.dev/posts/first-kotlin-package/</link>
+      <pubDate>Wed, 27 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/first-kotlin-package/</guid>
+      <description>I&amp;rsquo;ve finished and released my first Kotlin package to Bintray. It is still rough around the edges, but it is solving problems that I am facing while building an applicatin with Ktor. Developing it has also given me a good deal of experience with using Kotlin to solve problems.
+I&amp;rsquo;m calling the package credentials, and it is inspired by the credentials feature of Ruby on Rails. The library allows a developer to securely store credentials in a file that is located as part of the problem, for example resources/credentials.</description>
+    </item>
+    
+    <item>
+      <title>On Working Remote and Time Zones</title>
+      <link>https://camuthig.dev/posts/remote-time-differences/</link>
+      <pubDate>Wed, 13 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/remote-time-differences/</guid>
+      <description>Just over one month ago, my wife and I moved to Australia temporarily. We will be here for three or four months, and during that time, I will continue working for my company back in the United States. This means I am working remotely, but more importantly that I am working with a large time difference between myself and my coworkers. My coworkers are split between the East Coast (engineering team) and West Coast (product teams) of the United States, so I am 8.</description>
+    </item>
+    
+    <item>
+      <title>Testing Emails with PHP, Gmail, and IMAP</title>
+      <link>https://camuthig.dev/posts/testing-email-php-gmail-imap/</link>
+      <pubDate>Wed, 16 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/testing-email-php-gmail-imap/</guid>
+      <description>I already discussed my open source project, Courier, and writing integration tests for SMTP emails using MailHog. Most of the courier implementations do not use SMTP, though. Even more importantly, I found that when testing email delivery through services like SparkPost and SendGrid there are a lot of edge cases that should be known and understood. For example, there is an issue sending emails to CC recipients using templates with SparkPost.</description>
+    </item>
+    
+    <item>
+      <title>Testing Emails with MailHog and PHP</title>
+      <link>https://camuthig.dev/posts/test_email_php_mailhog/</link>
+      <pubDate>Wed, 02 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/test_email_php_mailhog/</guid>
+      <description>I have been working on an open source project, on and off, for the last couple of years that is designed to give developers a standard, concise interface for delivering emails in PHP through third-party SMTP providers, like SparkPost and SendGrid. I recently decided to break out the logic for each of the providers into separate packages, making the core project contain just the interfaces, exceptions, and some helpful traits.</description>
+    </item>
+    
+    <item>
+      <title>PHP 7.3 Features I&#39;m Excited About</title>
+      <link>https://camuthig.dev/posts/php-73-features/</link>
+      <pubDate>Wed, 19 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/php-73-features/</guid>
+      <description>By the time this post is live, PHP 7.3 should already have dropped. I am very happy with the quality of work released by the core team since 7.0. They have built a number of amazing features into the language that focus on developer productivity, which makes a difference when maintaining a large project. PHP 7.3 follows suit, including several great features, but there are a few that I am especially excited about.</description>
+    </item>
+    
+    <item>
+      <title>Deploying a Hugo Blog with Travis CI</title>
+      <link>https://camuthig.dev/posts/deploying-hugo-blog-travis-ci/</link>
+      <pubDate>Tue, 11 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/deploying-hugo-blog-travis-ci/</guid>
+      <description>I have enjoyed using Hugo to build my blog, but I have not been happy with the deploy process to GitHub Pages. GitHub user pages always deploy the master branch of the project and also does not directly support Hugo. This means you need at least two branches to make this work, one for the source and one for the release. Up to this point, I was using the pattern suggested by the Hugo team for this.</description>
+    </item>
+    
+    <item>
+      <title>.NET Core Postgres Context</title>
+      <link>https://camuthig.dev/posts/dotnet-postgres-context/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/dotnet-postgres-context/</guid>
+      <description>I&amp;rsquo;ve been playing around with .NET recently to see if I like it as a strongly typed web framework. One issue I ran into though, was that the naming conventions with Entity Framework leverage pascal case. I appreciate that this closely matches the code, but I have been using Postgres for my database of choice lately and case-sensitive naming is a pain in that environment.
+I found like-minded individuals discussing options in GitHub issues and blogs, and really appreciated the insights.</description>
+    </item>
+    
+    <item>
+      <title>Easy Oauth1 Client in PHP</title>
+      <link>https://camuthig.dev/posts/php-oauth1-client/</link>
+      <pubDate>Fri, 29 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/php-oauth1-client/</guid>
+      <description>I spent longer than I would have liked the other day finding a good way to use OAuth1 client credentials to integrate with an API in PHP. In the end, the solution was dead simple but not the first result on Packagist, so I thought I would put my notes down here to help others.
+The package I used was the Guzzle oauth-subscriber. For those not familiar, subscriber is a term that Guzzle uses to describe a number of their middleware, which I was unaware of and caused me to skip over it at first.</description>
+    </item>
+    
+    <item>
+      <title>A Faktory Client in PHP</title>
+      <link>https://camuthig.dev/posts/faktory-worker-client-php/</link>
+      <pubDate>Mon, 18 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/faktory-worker-client-php/</guid>
+      <description>Faktory is a worker server created by Mike Perham, the same person who created Sidekiq. His aim in developing the tool is to bring the same best practices hashed out by Sidekiq to languages besides Ruby. Faktory is still in a pre-release phase (at the time of writing this post it is at 0.7.0). It might not yet be ready for primetime, but I decided to give it a try anyway.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL Getters with Laravel Eloquent</title>
+      <link>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</guid>
+      <description>I recently began work on a proof-of-concept project I have been mentally shaping for some time now. In building this, I chose to stick with Laravel as a framework to build off of, as it is something I am familiar with, but I wanted to serve my application&amp;rsquo;s API using GraphQL instead of normal Laravel resources. For the task, I chose the Laravel GraphQL package, as I am already familiar with the underlying GraphQL implementation.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Linux on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/linux/</link>
+    <description>Recent content in Linux on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 02 Nov 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/linux/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Remapping Linux Modifiers with XKB</title>
+      <link>https://camuthig.dev/posts/remapping-linux-modifiers-with-xkb/</link>
+      <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/remapping-linux-modifiers-with-xkb/</guid>
+      <description>tl;dr I remapped my keys using xkb resulting in Caps Lock being Super and the left Windows key being meta. This allowed me to use Gnone global navigation shortcuts while still using MacOS bindings in my JetBrains IDEs.
+Xkb can be really difficult to work with, so hopefully for anyone else hoping to accomplish a similar goal will be able to use some of the information here to save some time.</description>
+    </item>
+    
+  </channel>
+</rss>

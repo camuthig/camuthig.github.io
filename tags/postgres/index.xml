@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Postgres on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/postgres/</link>
+    <description>Recent content in Postgres on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 05 Dec 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/postgres/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>.NET Core Postgres Context</title>
+      <link>https://camuthig.dev/posts/dotnet-postgres-context/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/dotnet-postgres-context/</guid>
+      <description>I&amp;rsquo;ve been playing around with .NET recently to see if I like it as a strongly typed web framework. One issue I ran into though, was that the naming conventions with Entity Framework leverage pascal case. I appreciate that this closely matches the code, but I have been using Postgres for my database of choice lately and case-sensitive naming is a pain in that environment.
+I found like-minded individuals discussing options in GitHub issues and blogs, and really appreciated the insights.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Building Custom Django Fields &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2020-05-10 00:00:00 &#43;0000 UTC">May 10, 2020</time>
+</div>
+		<h1 class="post-title">Building Custom Django Fields</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/python">python</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/django">django</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/restframework">restframework</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<p>I recently needed to implement a special kind of field in Django Rest Framework that turned out to be a fun
+experiment. I recreated this in a simple Django application, and the bulk of the DRF-related code can be found
+<a href="https://github.com/camuthig/django-drf-custom-id-object-field/blob/3e753153e50a35be5795858db3e852d72d7f34a8/bookstore/serializers.py#L9-L83">here</a>.</p>
+
+<p>First, the API used a hashed ID. So the primary key from the database was taken, additional information added
+to it and then hashed.</p>
+
+<p>Second, the API to <em>set</em> the relationship value behaved differently than when reading it. When sending a <code>POST</code>
+or <code>PUT</code> value, the API client would always send an object with the <code>id</code> key and the hashed ID of the
+relationship. This is different than most of the existing relationship fields in DRF, where the field is
+a scalar of some type. Along with this custom write pattern, on read operations the nested object was expected
+to be rendered with all fields.</p>
+
+<p>An example is helpful to see the pattern. In this example we have two models, <code>Author</code> and <code>Book</code>, where a book
+has one <code>Author</code> relationship.</p>
+
+<p>Creating a new book would look something like</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Awesome new book&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;hashed1&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>And the response from this would be something like the below. You can see that by having the API send the ID as part
+of an object, instead of as a scalar, the request and response begin to look similar, which is pretty cool.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Awesome new book&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;hashed1&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Arthur Writes&#34;</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="implementation">Implementation</h2>
+
+<p>The full project can be found <a href="https://github.com/camuthig/django-drf-custom-id-object-field">here</a>.</p>
+
+<p>Most of the work was around creating new field types for these hashed IDs as well as one specifically for wrapping it
+in an object.</p>
+
+<p>The first part was pretty easy, getting the IDs into a hashed format. This was two classes, one used for the ID on the
+current object and the other used for the relationship fields.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">HashedPrimaryKeyField</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    A field representing the primary key of an object as a base64 encoded string.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="k">def</span> <span class="nf">to_internal_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{value}&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">HashedPrimaryKeyRelatedField</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">PrimaryKeyRelatedField</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    A relationship field representing the primary key of a related field as a base64 encoded string.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="k">def</span> <span class="nf">to_internal_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_internal_value</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{value.pk}&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The next challenge was to determine the format which the user requested. I left this up to the DRF content negotiation.
+The negotiation sets an <code>accepted_renderer</code> parameter on the request before passing it down to the serializer in the
+<code>APIView</code>. This means determining the format is as easy as</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python">    <span class="k">def</span> <span class="nf">_format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">accepted_renderer</span><span class="o">.</span><span class="n">format</span>
+
+    <span class="k">def</span> <span class="nf">_accepts_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;json&#39;</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format</span><span class="p">()</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Next, I updated the validation and representational logic for my new field. Because my representation uses only the
+ID when building a non-JSON request, I turned on the PK only optimization in those cases and turned it off otherwise.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python">    <span class="k">def</span> <span class="nf">run_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_json</span><span class="p">()</span> <span class="ow">and</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;id_missing&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;id_missing&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">run_validation</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">use_pk_only_optimization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accepts_json</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">to_internal_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_json</span><span class="p">()</span> <span class="ow">and</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_internal_value</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accepts_json</span><span class="p">():</span>
+            <span class="c1"># I pass the serializer class to the field on construction to make this possible</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_representation</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Finally, I updated my serializers to use the new fields.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">ModelSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">HashedPrimaryKeyField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">AuthorSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Author</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">BookSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Book</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;author&#39;</span><span class="p">]</span>
+
+    <span class="n">author</span> <span class="o">=</span> <span class="n">NestedHashedPrimaryKeyRelatedField</span><span class="p">(</span><span class="n">queryset</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Author</span><span class="o">.</span><span class="n">objects</span><span class="p">,</span> <span class="n">serializer</span><span class="o">=</span><span class="n">AuthorSerializer</span><span class="p">)</span></code></pre></td></tr></table>
+</div>
+</div>
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/python-version-dependency-management/" class="left arrow">&#8592;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.715875761 &#43;0000 UTC m=&#43;0.532318551">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

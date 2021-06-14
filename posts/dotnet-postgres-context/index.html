@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				.NET Core Postgres Context &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2018-12-05 00:00:00 &#43;0000 UTC">December 5, 2018</time>
+</div>
+		<h1 class="post-title">.NET Core Postgres Context</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/csharp">csharp</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/dotnet">dotnet</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/postgres">postgres</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p>I&rsquo;ve been playing around with .NET recently to see if I like it as a strongly typed web framework. One issue I ran into
+though, was that the naming conventions with Entity Framework leverage pascal case. I appreciate that this closely
+matches the code, but I have been using Postgres for my database of choice lately and case-sensitive naming is a pain
+in that environment.</p>
+
+<p>I found like-minded individuals discussing options in <a href="https://github.com/aspnet/EntityFrameworkCore/issues/5159#issuecomment-376112332">GitHub issues</a>
+and <a href="https://andrewlock.net/customising-asp-net-core-identity-ef-core-naming-conventions-for-postgresql/">blogs</a>,
+and really appreciated the insights. So that I don&rsquo;t have to count on finding those posts again, below is the <code>DbContext</code>
+I put together to convert naming conventions from pascal case to snake case. Along with converting to snake case, I
+also removed the <code>asp_net_</code> prefix from the converted .NET Identity tables. This code is almost entirely copy-pasted from the
+other sources, so I&rsquo;m not trying to take credit for it, really just documenting it for myself.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-cs" data-lang="cs"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cs" data-lang="cs"><span class="k">using</span> <span class="nn">Microsoft.EntityFrameworkCore</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">App.Data</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">AppDbContext</span> <span class="p">:</span> <span class="n">DbContext</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="n">AppDbContext</span><span class="p">(</span><span class="n">DbContextOptions</span><span class="p">&lt;</span><span class="n">AppDbContext</span><span class="p">&gt;</span> <span class="n">options</span><span class="p">):</span> <span class="k">base</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="p">{</span>
+        <span class="p">}</span>
+
+        <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="n">OnModelCreating</span><span class="p">(</span><span class="n">ModelBuilder</span> <span class="n">builder</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">base</span><span class="p">.</span><span class="n">OnModelCreating</span><span class="p">(</span><span class="n">builder</span><span class="p">);</span>
+
+            <span class="c1">// Npgsql comes with a it&#39;s own translator, making conversion easy
+</span><span class="c1"></span>            <span class="kt">var</span> <span class="n">mapper</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Npgsql</span><span class="p">.</span><span class="n">NameTranslation</span><span class="p">.</span><span class="n">NpgsqlSnakeCaseNameTranslator</span><span class="p">();</span>
+
+            <span class="k">foreach</span><span class="p">(</span><span class="kt">var</span> <span class="n">entity</span> <span class="k">in</span> <span class="n">builder</span><span class="p">.</span><span class="n">Model</span><span class="p">.</span><span class="n">GetEntityTypes</span><span class="p">())</span>
+            <span class="p">{</span>
+                <span class="n">entity</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">TableName</span> <span class="p">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">TranslateTypeName</span><span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">TableName</span><span class="p">);</span>
+
+                <span class="k">foreach</span><span class="p">(</span><span class="kt">var</span> <span class="n">property</span> <span class="k">in</span> <span class="n">entity</span><span class="p">.</span><span class="n">GetProperties</span><span class="p">())</span>
+                <span class="p">{</span>
+                    <span class="n">property</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">ColumnName</span> <span class="p">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">TranslateMemberName</span><span class="p">(</span><span class="n">property</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="k">foreach</span><span class="p">(</span><span class="kt">var</span> <span class="n">key</span> <span class="k">in</span> <span class="n">entity</span><span class="p">.</span><span class="n">GetKeys</span><span class="p">())</span>
+                <span class="p">{</span>
+                    <span class="n">key</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">Name</span> <span class="p">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">TranslateMemberName</span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">Name</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="k">foreach</span><span class="p">(</span><span class="kt">var</span> <span class="n">key</span> <span class="k">in</span> <span class="n">entity</span><span class="p">.</span><span class="n">GetForeignKeys</span><span class="p">())</span>
+                <span class="p">{</span>
+                    <span class="n">key</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">Name</span> <span class="p">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">TranslateMemberName</span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">Name</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="k">foreach</span><span class="p">(</span><span class="kt">var</span> <span class="n">index</span> <span class="k">in</span> <span class="n">entity</span><span class="p">.</span><span class="n">GetIndexes</span><span class="p">())</span>
+                <span class="p">{</span>
+                    <span class="n">index</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">Name</span> <span class="p">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">TranslateMemberName</span><span class="p">(</span><span class="n">index</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">Name</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="c1">// Drop the &#39;asp_net_&#39; prefix from the Identity tables
+</span><span class="c1"></span>                <span class="k">if</span> <span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">TableName</span><span class="p">.</span><span class="n">StartsWith</span><span class="p">(</span><span class="s">&#34;asp_net_&#34;</span><span class="p">))</span>
+                <span class="p">{</span>
+                    <span class="n">entity</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">TableName</span> <span class="p">=</span> <span class="n">entity</span><span class="p">.</span><span class="n">Relational</span><span class="p">().</span><span class="n">TableName</span><span class="p">.</span><span class="n">Replace</span><span class="p">(</span><span class="s">&#34;asp_net_&#34;</span><span class="p">,</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/php-oauth1-client/" class="left arrow">&#8592;</a>
+		<a href="/posts/deploying-hugo-blog-travis-ci/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.722935313 &#43;0000 UTC m=&#43;0.539378090">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

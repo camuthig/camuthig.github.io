@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Pattern Matching CLI commands with Rust &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-06-06 00:00:00 &#43;0000 UTC">June 6, 2019</time>
+</div>
+		<h1 class="post-title">Pattern Matching CLI commands with Rust</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/rust">rust</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p>I&rsquo;m building a CLI tool using Rust, and I ran into some difficulties figuring out the best way to
+work with the <a href="https://github.com/TeXitoi/structopt">structopts</a> crate using subcommands to break out my logic into separate functions. I suspect this is because I am new to Rust, but
+I felt it was worth documenting the challenge and solution.</p>
+
+<p>I&rsquo;ll use a fake tool to demonstrate the pattern I used. Let&rsquo;s say the tool is called <code>ecko</code>, and
+it is used to print two different kinds of messages: hellos and goodbyes. So you might <code>ecko hello World</code>
+and expect to see an output like <code>Hello, World</code>. Additionally there is a global option of <code>-p</code>, for &ldquo;punctuation&rdquo;
+to allow the user to add any punctuation to the end of any command, such as <code>ecko goodbye -p '!' &quot;cruel world&quot;</code> to
+print <code>Goodbye, cruel world!</code>. The project implementing this example can be found on <a href="https://github.com/camuthig/rust-ecko">GitHub</a>.</p>
+
+<p>So the first step is to define the CLI application, which the <a href="https://docs.rs/structopt/0.2.17/structopt/#subcommands">structopt docs describe well</a>.
+Our <code>ecko</code> application will look something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">quicli</span>::<span class="n">prelude</span>::<span class="o">*</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">structopt</span>::<span class="n">StructOpt</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug, StructOpt)]</span><span class="w">
+</span><span class="w"></span><span class="cp">#[structopt(
+</span><span class="cp">    name = </span><span class="s">&#34;ecko&#34;</span><span class="cp">,
+</span><span class="cp">    raw(setting = </span><span class="s">&#34;structopt::clap::AppSettings::SubcommandRequiredElseHelp&#34;</span><span class="cp">))
+</span><span class="cp">]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Cli</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="cp">#[structopt(short = </span><span class="s">&#34;p&#34;</span><span class="cp">)]</span><span class="w">
+</span><span class="w">    </span><span class="sd">/// The punctuation to add to the printed statement
+</span><span class="sd"></span><span class="w">    </span><span class="n">punctuation</span>: <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="cp">#[structopt(subcommand)]</span><span class="w">
+</span><span class="w">    </span><span class="n">cmd</span>: <span class="nc">Command</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug, StructOpt)]</span><span class="w">
+</span><span class="w"></span><span class="k">enum</span> <span class="nc">Command</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="cp">#[structopt(name = </span><span class="s">&#34;hello&#34;</span><span class="cp">)]</span><span class="w">
+</span><span class="w">    </span><span class="n">Hello</span><span class="p">(</span><span class="n">Hello</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="cp">#[structopt(name = </span><span class="s">&#34;goodbye&#34;</span><span class="cp">)]</span><span class="w">
+</span><span class="w">    </span><span class="n">Goodbye</span><span class="p">(</span><span class="n">Goodbye</span><span class="p">),</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug, StructOpt)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Hello</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="sd">/// The name to say hello to
+</span><span class="sd"></span><span class="w">    </span><span class="cp">#[structopt(name = </span><span class="s">&#34;who&#34;</span><span class="cp">)]</span><span class="w">
+</span><span class="w">    </span><span class="n">who</span>: <span class="nb">String</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Debug, StructOpt)]</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">Goodbye</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="sd">/// The name to say goodbye to
+</span><span class="sd"></span><span class="w">    </span><span class="cp">#[structopt(name = </span><span class="s">&#34;who&#34;</span><span class="cp">)]</span><span class="w">
+</span><span class="w">    </span><span class="n">who</span>: <span class="nb">String</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span></code></pre></td></tr></table>
+</div>
+</div>
+<p>When building out CLI applications with subcommands, I like to write one function per subcommand. I
+feel it keeps the logic easy to reason about and read. So the plan is to have two functions, <code>hello</code> and
+<code>goodbye</code> that accept two arguments, one for the subcommand&rsquo;s struct and another for the overall
+command&rsquo;s struct. This allows us to typehint everything properly and get autocompletion in our function.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">hello</span><span class="p">(</span><span class="n">cli</span>: <span class="kp">&amp;</span><span class="nc">Cli</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span>: <span class="kp">&amp;</span><span class="nc">Hello</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">Error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Hello, {}{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">who</span><span class="p">,</span><span class="w"> </span><span class="n">cli</span><span class="p">.</span><span class="n">punctuation</span><span class="p">.</span><span class="n">as_ref</span><span class="p">().</span><span class="n">unwrap_or</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">String</span>::<span class="n">new</span><span class="p">()));</span><span class="w">
+</span><span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">goodbye</span><span class="p">(</span><span class="n">cli</span>: <span class="kp">&amp;</span><span class="nc">Cli</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span>: <span class="kp">&amp;</span><span class="nc">Goodbye</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">Error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Goodbye, {}{}&#34;</span><span class="p">,</span><span class="n">cmd</span><span class="p">.</span><span class="n">who</span><span class="p">,</span><span class="w"> </span><span class="n">cli</span><span class="p">.</span><span class="n">punctuation</span><span class="p">.</span><span class="n">as_ref</span><span class="p">().</span><span class="n">unwrap_or</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">String</span>::<span class="n">new</span><span class="p">()));</span><span class="w">
+</span><span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Finally is the part I had trouble figuring out, and that is how to best match on the type of the
+subcommand such that it can be known when calling the functions. I think the trouble was really just
+in my being new to the language, so the Rust-compentent out there probably already know this.
+However, once you call <code>cli.cmd</code> you can <code>match</code> on it and pull out the inner struct, converting
+it into a variable of its own. So bringing it all together, the <code>main</code> function will be</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">CliResult</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">cli</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cli</span>::<span class="n">from_args</span><span class="p">();</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cli</span><span class="p">.</span><span class="n">cmd</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Command</span>::<span class="n">Hello</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">hello</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cli</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">c</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">Command</span>::<span class="n">Goodbye</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">goodbye</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cli</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">c</span><span class="p">)</span><span class="o">?</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span></code></pre></td></tr></table>
+</div>
+</div>
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/remote-time-post-mortem/" class="left arrow">&#8592;</a>
+		<a href="/posts/remapping-linux-modifiers-with-xkb/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.71856171 &#43;0000 UTC m=&#43;0.535004500">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				GraphQL Server Built on Ktor &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-04-24 00:00:00 &#43;0000 UTC">April 24, 2019</time>
+</div>
+		<h1 class="post-title">GraphQL Server Built on Ktor</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/kotlin">kotlin</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/graphql">graphql</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p><em>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing
+my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error
+handling. Please review and understand any code before reusing it, and feel free to leave comments on the GitHub project</em></p>
+
+<p>With <a href="/posts/ktor-social-auth">authentication in place on the Ktor server</a>, we can move on to building out the skeleton
+of the GraphQL server, incorporating the authenticated user. The full source code for this part of the process can be found
+<a href="https://github.com/camuthig/ktor-social-graphql/pull/2/files">here</a>. Topics that will be covered will be programmatically
+building the GraphQL server and schema as well as accessing the authenticated user from within the GraphQL execution
+context.</p>
+
+<p>The first step is to finalize how the web client will provide the server with the JWT created by our authentication module.
+I chose to use a session cookie because it is simple and because the API will only be consumed by my own client, if any,
+allowing me to assume I won&rsquo;t have any CORS issues. I <a href="https://github.com/camuthig/ktor-social-graphql/pull/2/files#diff-083499960a6541b6c22d276b2fd32672R38">installed
+the session feature</a>
+in the auth module and configured it to <a href="https://github.com/camuthig/ktor-social-graphql/pull/2/files#diff-083499960a6541b6c22d276b2fd32672R73">verify the JWT stored on the session</a>.
+Within the validation phase, I create a new <code>UserPrincipal</code> that wraps a <code>User</code> instance, giving any authenticated
+call quick access to the current user.</p>
+
+<p>(Since originally writing this code, I learned a more <a href="https://github.com/camuthig/ktor-social-graphql/blob/138956f762c8865eaf67f9457af541b9483dc90d/src/auth/Module.kt#L67-L79">idiomatic</a>
+way to implement the same logic, and I really like the flow.)</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin">    <span class="n">install</span><span class="p">(</span><span class="n">Sessions</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cookie</span><span class="p">&lt;</span><span class="n">Session</span><span class="p">&gt;(</span><span class="s">&#34;ktor_social_graphql_session&#34;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Be sure to give the whole domain access to the cookie
+</span><span class="c1"></span>            <span class="n">cookie</span><span class="p">.</span><span class="n">path</span> <span class="p">=</span> <span class="s">&#34;/&#34;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">install</span><span class="p">(</span><span class="n">Authentication</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">oauth</span><span class="p">(</span><span class="s">&#34;oauth&#34;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// The existing oauth code
+</span><span class="c1"></span>        <span class="p">}</span>
+
+        <span class="n">session</span><span class="p">&lt;</span><span class="n">Session</span><span class="p">&gt;(</span><span class="s">&#34;session&#34;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">validate</span> <span class="p">{</span>
+                <span class="k">val</span> <span class="py">session</span> <span class="p">=</span> <span class="n">sessions</span><span class="p">.</span><span class="k">get</span><span class="p">&lt;</span><span class="n">Session</span><span class="p">&gt;()</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">session</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">val</span> <span class="py">token</span> <span class="p">=</span> <span class="n">session</span><span class="p">.</span><span class="n">accessToken</span>
+                    <span class="k">val</span> <span class="py">jwt</span> <span class="p">=</span> <span class="n">JwtConfiguration</span><span class="p">.</span><span class="n">verifier</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+                    <span class="k">val</span> <span class="py">user</span> <span class="p">=</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">getUser</span><span class="p">(</span><span class="n">jwt</span><span class="p">.</span><span class="n">subject</span><span class="p">.</span><span class="n">toInt</span><span class="p">())</span>
+
+                    <span class="k">if</span> <span class="p">(</span><span class="n">user</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">UserPrincipal</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="k">null</span>
+                    <span class="p">}</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">null</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>To build out the GraphQL schema, I will use the <a href="https://github.com/ExpediaDotCom/graphql-kotlin">kotlin-graphql</a> package.
+With this package we will define the schema as a collection of classes and functions directly in Kotlin, instead of as a
+standard GraphQL schema SDL. Kotlin-graphql will take each function on the provided classes and treat them as mutations or
+queries on a generated GraphQL schema. For example, a single user query would look like</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">class</span> <span class="nc">UserQuery</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">userRepository</span><span class="p">:</span> <span class="n">UserRepository</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">fun</span> <span class="nf">getUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">Int</span><span class="p">):</span> <span class="n">User</span><span class="p">?</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">getUser</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Next we will make the GraphQL functions aware of the application call context, giving it access to the authenticated user.
+Kotlin-graphql has the concept of a <code>GraphQLContext</code> annotated argument that can be added to any function. This argument will not be
+presented on the GraphQL schema and is passed into the execution on each request. So now we will add a custom context
+class to wrap the Ktor <code>ApplicationCall</code> and pass it into the new <code>me</code> function using the <code>@GraphQLContext</code> annotation.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">class</span> <span class="nc">ApplicationCallContext</span><span class="p">(</span><span class="k">val</span> <span class="py">call</span><span class="p">:</span> <span class="n">ApplicationCall</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">UserQuery</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">userRepository</span><span class="p">:</span> <span class="n">UserRepository</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">fun</span> <span class="nf">getUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">Int</span><span class="p">):</span> <span class="n">User</span><span class="p">?</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">getUser</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fun</span> <span class="nf">me</span><span class="p">(</span><span class="n">@GraphQLContext</span> <span class="n">context</span><span class="p">:</span> <span class="n">ApplicationCallContext</span><span class="p">):</span> <span class="n">User</span><span class="p">?</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">context</span><span class="p">.</span><span class="n">call</span><span class="p">.</span><span class="n">principal</span><span class="p">&lt;</span><span class="n">UserPrincipal</span><span class="p">&gt;()</span><span class="o">?.</span><span class="n">user</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>And finally there is the process of defining the GraphQL server and adding it to the Ktor application. There are couple of
+pieces to this, but the majority of it is creating the server and defining how to execute the query against it:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="c1">// Within the installGraphQL Application function
+</span><span class="c1"></span><span class="k">val</span> <span class="py">config</span> <span class="p">=</span> <span class="n">SchemaGeneratorConfig</span><span class="p">(</span><span class="n">listOf</span><span class="p">(</span><span class="s">&#34;org.camuthig&#34;</span><span class="p">))</span>
+<span class="k">val</span> <span class="py">queries</span> <span class="p">=</span> <span class="n">listOf</span><span class="p">(</span><span class="n">TopLevelObject</span><span class="p">(</span><span class="n">UserQuery</span><span class="p">(</span><span class="n">userRepository</span><span class="p">)))</span>
+<span class="k">val</span> <span class="py">schema</span><span class="p">:</span> <span class="n">GraphQLSchema</span> <span class="p">=</span> <span class="n">toSchema</span><span class="p">(</span><span class="n">config</span> <span class="p">=</span> <span class="n">config</span><span class="p">,</span> <span class="n">queries</span> <span class="p">=</span> <span class="n">queries</span><span class="p">)</span>
+<span class="k">val</span> <span class="py">graphQL</span> <span class="p">=</span> <span class="n">GraphQL</span><span class="p">.</span><span class="n">newGraphQL</span><span class="p">(</span><span class="n">schema</span><span class="p">).</span><span class="n">build</span><span class="p">()</span>
+
+<span class="k">suspend</span> <span class="k">fun</span> <span class="nf">ApplicationCall</span><span class="p">.</span><span class="n">executeQuery</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">request</span> <span class="p">=</span> <span class="n">receive</span><span class="p">&lt;</span><span class="n">GraphQLRequest</span><span class="p">&gt;()</span>
+    <span class="k">val</span> <span class="py">executionInput</span> <span class="p">=</span> <span class="n">ExecutionInput</span><span class="p">.</span><span class="n">newExecutionInput</span><span class="p">()</span>
+        <span class="p">.</span><span class="n">context</span><span class="p">(</span><span class="n">ApplicationCallContext</span><span class="p">(</span><span class="k">this</span><span class="p">))</span>
+        <span class="p">.</span><span class="n">query</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">query</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">operationName</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">operationName</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">variables</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">variables</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">build</span><span class="p">()</span>
+
+    <span class="n">graphQL</span><span class="p">.</span><span class="n">execute</span><span class="p">(</span><span class="n">executionInput</span><span class="p">)</span>
+
+    <span class="n">respond</span><span class="p">(</span><span class="n">graphQL</span><span class="p">.</span><span class="n">execute</span><span class="p">(</span><span class="n">executionInput</span><span class="p">))</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>To add this GraphQL server to the application we will define an installable <a href="https://github.com/camuthig/ktor-social-graphql/pull/2/files#diff-7a626779c3a6f9bacd920c43a1aa6406R23">module</a>,
+just like with the authentication. Along with the changes noted above, the module also configures the <code>GET</code> and <code>POST</code> routes
+and sets up a static route to serve up the HTML version of the GraphQL Playground, tweaking it slightly to default to
+sending cookies for authentication.</p>
+
+<p>And that has the server up and running. The next step will be to design out the domain of the application and create
+the necessary GraphQL queries and mutations for a client to be able to interact with it.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/lumen-custom-database-connection/" class="left arrow">&#8592;</a>
+		<a href="/posts/remote-time-post-mortem/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.717612691 &#43;0000 UTC m=&#43;0.534055469">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

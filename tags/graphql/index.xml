@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Graphql on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/graphql/</link>
+    <description>Recent content in Graphql on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 24 Apr 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/graphql/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>GraphQL Server Built on Ktor</title>
+      <link>https://camuthig.dev/posts/ktor-graphql-server/</link>
+      <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/ktor-graphql-server/</guid>
+      <description>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error handling. Please review and understand any code before reusing it, and feel free to leave comments on the GitHub project
+With authentication in place on the Ktor server, we can move on to building out the skeleton of the GraphQL server, incorporating the authenticated user.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL Getters with Laravel Eloquent</title>
+      <link>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</guid>
+      <description>I recently began work on a proof-of-concept project I have been mentally shaping for some time now. In building this, I chose to stick with Laravel as a framework to build off of, as it is something I am familiar with, but I wanted to serve my application&amp;rsquo;s API using GraphQL instead of normal Laravel resources. For the task, I chose the Laravel GraphQL package, as I am already familiar with the underlying GraphQL implementation.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Testing Emails with MailHog and PHP &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-01-02 00:00:00 &#43;0000 UTC">January 2, 2019</time>
+</div>
+		<h1 class="post-title">Testing Emails with MailHog and PHP</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/php">php</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/email">email</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/testing">testing</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<p>I have been working on an <a href="https://quartzy.github.io/courier">open source project</a>, on and off, for the last couple of years that is designed to give
+developers a standard, concise interface for delivering emails in PHP through third-party SMTP providers, like SparkPost and
+SendGrid. I recently decided to break out the logic for each of the providers into separate packages, making the core
+project contain just the interfaces, exceptions, and some helpful traits. I also decided that I should include an
+implementation of the interface to allow developers to deliver test emails using the built-in <code>mail</code> function, and I wanted
+to make sure the logic was thoroughly tested in an end-to-end manner: what the developer sends on the interface should
+make it all the way to the expected inboxes.</p>
+
+<p>The pull request implementing the delivery logic as well as the below documented testing can be found on <a href="https://github.com/quartzy/courier/pull/33">GitHub</a>.</p>
+
+<p>The general structure of an end-to-end test, here, is that that the test should</p>
+
+<ol>
+<li>Build an email</li>
+<li>Deliver the email</li>
+<li>Retrieve the delivered email</li>
+<li>Compare the delivered email to the expectations</li>
+</ol>
+
+<h3 id="mailhog-and-mailmimeparser">MailHog and MailMimeParser</h3>
+
+<p><a href="https://github.com/mailhog/MailHog">MailHog</a> is an email testing tool that acts as a drop in replacement for a SMTP
+server. The idea is to run MailHog and configure it as your SMTP server. MailHog accepts the
+requests, holding onto the emails on your local machine, and it supplies an API to pull those emails back out of it
+later. Once I had the email data, the goal was to parse it into an easy to use format. For this, I used the
+<a href="https://github.com/zbateson/mail-mime-parser">MimeMailParser</a>. This is an awesome package that takes the raw MIME
+data of an email and transforms it into an object. Because I wanted to test-drive the implementation, the first step
+was to write a function to allow me to get the emails out of MailHog and parse them into an object for comparison.</p>
+
+<p>My original thought was to generate a MailHog client using their Swagger API definitions. However, I quickly found
+that the <a href="https://github.com/mailhog/MailHog/issues/233">Swagger does not match the API</a>. I only needed
+to make a single request to the server and grab one value, so I decided to keep the dependencies in the tests to zero
+and just use curl to get what I needed.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+    <span class="k">private</span> <span class="k">function</span> <span class="nf">getEmail</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$subject</span><span class="p">)</span><span class="o">:</span> <span class="o">?</span><span class="nx">Message</span>
+    <span class="p">{</span>
+        <span class="c1">// It takes a second or two for the email to appear in MailHog, so this is just a simple solution that has worked for me
+</span><span class="c1"></span>        <span class="nx">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+        <span class="nv">$ch</span> <span class="o">=</span> <span class="nx">curl_init</span><span class="p">(</span><span class="s1">&#39;http://localhost:8025/api/v2/search?kind=containing&amp;query=&#39;</span> <span class="o">.</span> <span class="nx">urlencode</span><span class="p">(</span><span class="nv">$subject</span><span class="p">));</span>
+
+        <span class="nx">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_CUSTOMREQUEST</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">);</span>
+        <span class="nx">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_RETURNTRANSFER</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+        <span class="nv">$result</span> <span class="o">=</span> <span class="nx">curl_exec</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$result</span> <span class="o">===</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nx">\Exception</span><span class="p">(</span><span class="s1">&#39;Unable to access MailHog server&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nv">$results</span> <span class="o">=</span> <span class="nx">json_decode</span><span class="p">(</span><span class="nv">$result</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$results</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nv">$results</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">])</span> <span class="p">{</span>
+            <span class="nv">$message</span> <span class="o">=</span> <span class="nv">$results</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+
+            <span class="nv">$parser</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MailMimeParser</span><span class="p">();</span>
+
+            <span class="nv">$message</span> <span class="o">=</span> <span class="nv">$parser</span><span class="o">-&gt;</span><span class="na">parse</span><span class="p">(</span><span class="nv">$message</span><span class="p">[</span><span class="s1">&#39;Raw&#39;</span><span class="p">][</span><span class="s1">&#39;Data&#39;</span><span class="p">]);</span>
+
+            <span class="k">return</span> <span class="nv">$message</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span>  <span class="k">null</span><span class="p">;</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="running-mailhog">Running MailHog</h3>
+
+<p>I used Docker Compose to easily run MailHog on whatever computer I might be using for my testing. The upside of this
+is that it also makes it easier to set everything up on CI servers as well. I used the default servers, but alternatives
+could be used instead.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml">version<span class="p">:</span><span class="w"> </span><span class="s2">&#34;3&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span>services<span class="p">:</span><span class="w">
+</span><span class="w">  </span>mailhog<span class="p">:</span><span class="w">
+</span><span class="w">    </span>image<span class="p">:</span><span class="w"> </span><span class="s2">&#34;mailhog/mailhog&#34;</span><span class="w">
+</span><span class="w">    </span>ports<span class="p">:</span><span class="w">
+</span><span class="w">      </span>-<span class="w"> </span><span class="s2">&#34;1025:1025&#34;</span><span class="w">
+</span><span class="w">      </span>-<span class="w"> </span><span class="s2">&#34;8025:8025&#34;</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>MailHog can then be run using <code>docker-compose up -d</code></p>
+
+<h3 id="continuous-testing">Continuous Testing</h3>
+
+<p>The project runs tests automatically using Travis CI, so I needed to ensure I could run these integration tests
+there as well. This required a few changes to my existing Travis CI configuration file:</p>
+
+<ol>
+<li>Ensure sudo is enabled</li>
+<li>Start docker</li>
+<li>Install MailHog and start the server</li>
+<li>Configure PHP to use the <code>mhsendmail</code> function provided by MailHog instead of <code>sendmail</code></li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml">sudo<span class="p">:</span><span class="w"> </span>required<span class="w">
+</span><span class="w">
+</span><span class="w"></span>services<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>docker<span class="w">
+</span><span class="w">
+</span><span class="w"></span>before_install<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>wget<span class="w"> </span>https<span class="p">:</span>//github.com/mailhog/mhsendmail/releases/download/v0.<span class="m">2.0</span>/mhsendmail_linux_amd64<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>chmod<span class="w"> </span>+x<span class="w"> </span>mhsendmail_linux_amd64<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>sudo<span class="w"> </span>mv<span class="w"> </span>mhsendmail_linux_amd64<span class="w"> </span>/usr/local/bin/mhsendmail<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w">
+</span><span class="w">
+</span><span class="w"></span>before_script<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>echo<span class="w"> </span><span class="s1">&#39;sendmail_path = /usr/local/bin/mhsendmail&#39;</span><span class="w"> </span>&gt;<span class="sd">&gt; ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini</span></code></pre></td></tr></table>
+</div>
+</div>
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/php-73-features/" class="left arrow">&#8592;</a>
+		<a href="/posts/testing-email-php-gmail-imap/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.721730596 &#43;0000 UTC m=&#43;0.538173378">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

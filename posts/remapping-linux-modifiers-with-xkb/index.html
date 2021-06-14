@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Remapping Linux Modifiers with XKB &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-11-02 00:00:00 &#43;0000 UTC">November 2, 2019</time>
+</div>
+		<h1 class="post-title">Remapping Linux Modifiers with XKB</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/linux">linux</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<h1 id="tl-dr">tl;dr</h1>
+
+<p>I remapped my keys using xkb resulting in Caps Lock being Super and the left Windows key being meta. This allowed me to
+use Gnone global navigation shortcuts while still using MacOS bindings in my JetBrains IDEs.</p>
+
+<p>Xkb can be really difficult to work with, so hopefully for anyone else hoping to accomplish a similar goal will be
+able to use some of the information here to save some time. My xkb symbols file can be found
+<a href="https://github.com/camuthig/env/commit/76cb79b61a657784e139e228035d263e558be3ef">here</a>.</p>
+
+<h1 id="how-i-got-there">How I Got There</h1>
+
+<p>I find myself more frequently working on my Linux laptop, running PopOS, transitioning from a Macbook Pro.
+A pain point in this transition is breaking the muscle memory regarding shortcuts that I built over
+the years that make repetitive movements efficient. I decided that I like the MacOS hotkeys for the JetBrains suite of
+products, which I use daily, so I set off over the last weeks to find a way to allow me to use those without breaking the rest of
+the Linux ecosystem.</p>
+
+<p>My first thought, and success, was to convert my Caps Lock key to a Hyper key using Xmodmap. I quickly learned that using Xmodmap
+wasn&rsquo;t going to be an option based on recent changes to <a href="https://bugzilla.redhat.com/show_bug.cgi?id=873656">how Gnome loads keymappings</a>.
+With that, my next plan was to use xkb to accomplish the same thing.</p>
+
+<p>It took a while, but I was able to get a xkb mapping working to this end. It allowed me to remap Caps Lock to hyper, and
+I also remapped the Windows key to be only meta, instead of also super which is the default within Gnome. Removing super
+from the windows key ensured that any hotkeys that I did not or could not remap to hyper would not cause unwanted collisions.
+As part of this exploration process, I began to dig into programmable keyboards as well, getting excited about the possibility
+to solve my problems more thoroughly in that way.</p>
+
+<p>I just received a new keyboard, programmable via QMK, and spent the day exploring possibilities with it. What I realized
+along the way is that I need to find a solution that combines the software solution with the QMK solution. A solution that
+would allow me to work efficiently from my new keyboard or from directly on the laptop.</p>
+
+<p>The first challenge in this was that the hyper key in Linux is a virtualized key. However, with QMK, the hyper modifier
+is the actual modifer (combination of all other modifier keys). So I had to rethink my xkb solution. I bang my head on
+it for longer than I would like to admit before I realized that since I moved super off of the windows key, I could just
+as easily use that instead of hyper on the Caps Lock for the Gnome global shortcuts. The end result being my windows
+key being mapped to meta and my Caps Lock key mapped to super. My new keyboard is a Planck, so for easy access, I
+configured the escape key to act as super on hold and escape on tap.</p>
+
+<h1 id="getting-the-xkb-mapping-right">Getting the xkb Mapping Right</h1>
+
+<p><strong>Warning Making changes to your xkb files can cause the X server boot to crash, resulting in your keyboard not working
+on the login page for PopOS as or the GUI just not loading.</strong> I got myself into this spot once. I was able to get the system
+to boot and let me login by going into a terminal directly. I did this by editing the systemd settings at the bootloader (hold the
+space and esc keys while booting), then hit the <code>E</code> key and update the properties to include <code>systemd.unit=multi-user.target</code>.</p>
+
+<ol>
+<li>I created a <a href="https://github.com/camuthig/env/commit/bc5b5956814e22e1a2cd3c2ab6b584acfdbc0b30">custom mapping file</a>.
+This file is self documenting, so I won&rsquo;t go into what each part is doing here.</li>
+<li>I moved this file into <code>/usr/share/X11/xkb/symbols</code> and named it just <code>mymods</code>.</li>
+<li>I updated the <code>/usr/share/X11/xkb/rules/evdev</code> file to include the line <code>mymods = +mymods</code> directly under the line
+that looks like <code>! option = symbol</code></li>
+<li>I updated the <code>/usr/share/X11/xkb/rules/evdev.lst</code> file to include the line
+<div class="highlight"><pre class="chroma"><code class="language-php" data-lang="php">mymods               Add custom modifier mappings for super and meta</code></pre></div>
+directly under the line that looks like <code>! option</code></li>
+<li>I added the following XML in <code>/usr/share/X11/xkb/rules/evdev.xml</code> nested under the <code>&lt;group&gt;</code> inside of <code>&lt;optionList&gt;</code>
+<code>xml
+&lt;optionList&gt;
+&lt;group allowMultipleSelection=&quot;true&quot;&gt;
+  &lt;option&gt;
+    &lt;configItem&gt;
+      &lt;name&gt;mymods&lt;/name&gt;
+      &lt;description&gt;Add custom modifier mappings for super and meta&lt;/description&gt;
+    &lt;/configItem&gt;
+  &lt;/option&gt;
+</code></li>
+<li>Finally, I updated my dconf files using the <a href="https://wiki.gnome.org/Projects/dconf">dconf Editor</a>. I added a
+setting for <code>org.gnome.desktop.input-sources.xkb-options</code> as <code>['mymods']</code>.</li>
+</ol>
+
+<p>From there, each time I started an X session, the options are applied, ensuring my key bindings still.</p>
+
+<p>So what are all the parts? The custom mapping file is the bulk of the logic, it defines what keys and modifiers
+I am changing and how I want them changed. The <code>evdev*</code> files are just configuration files to ensure xkb is capable
+of understanding the change I made to my <code>xkb-options</code> file. I found the best way to test my mapping settings, that
+doesn&rsquo;t require logging out of my session each time, was to run the command <code>setxkbmap -option &quot;&quot; -option mymods</code> to
+clear out any existing options and apply my custom mapping option again.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/rust-cli-pattern-matching/" class="left arrow">&#8592;</a>
+		<a href="/posts/2019-in-review/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.716547953 &#43;0000 UTC m=&#43;0.532990751">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

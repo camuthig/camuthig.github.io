@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Easy Oauth1 Client in PHP &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2018-06-29 00:00:00 &#43;0000 UTC">June 29, 2018</time>
+</div>
+		<h1 class="post-title">Easy Oauth1 Client in PHP</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/php">php</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p>I spent longer than I would have liked the other day finding a good way to
+use OAuth1 client credentials to integrate with an API in PHP. In the end,
+the solution was dead simple but not the first result on Packagist, so I
+thought I would put my notes down here to help others.</p>
+
+<p>The package I used was the <a href="https://github.com/guzzle/oauth-subscriber">Guzzle oauth-subscriber</a>.
+For those not familiar, <code>subscriber</code> is a term that Guzzle uses to describe a
+number of their middleware, which I was unaware of and caused me to skip over
+it at first. The tool is very simple to use, as shown in the project&rsquo;s readme.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="k">use</span> <span class="nx">GuzzleHttp\Client</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">GuzzleHttp\HandlerStack</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">GuzzleHttp\Subscriber\Oauth\Oauth1</span><span class="p">;</span>
+
+<span class="nv">$stack</span> <span class="o">=</span> <span class="nx">HandlerStack</span><span class="o">::</span><span class="na">create</span><span class="p">();</span>
+
+<span class="nv">$middleware</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Oauth1</span><span class="p">([</span>
+    <span class="s1">&#39;consumer_key&#39;</span>    <span class="o">=&gt;</span> <span class="s1">&#39;my_key&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;consumer_secret&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;my_secret&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;token&#39;</span>           <span class="o">=&gt;</span> <span class="s1">&#39;my_token&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;token_secret&#39;</span>    <span class="o">=&gt;</span> <span class="s1">&#39;my_token_secret&#39;</span>
+<span class="p">]);</span>
+<span class="nv">$stack</span><span class="o">-&gt;</span><span class="na">push</span><span class="p">(</span><span class="nv">$middleware</span><span class="p">);</span>
+
+<span class="nv">$client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Client</span><span class="p">([</span>
+    <span class="s1">&#39;base_uri&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://api.twitter.com/1.1/&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;handler&#39;</span> <span class="o">=&gt;</span> <span class="nv">$stack</span><span class="p">,</span>
+    <span class="s1">&#39;auth&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;oauth&#39;</span>
+<span class="p">]);</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<p>And bam! You&rsquo;ve got yourself OAuth1 client authentication. The great part of
+this is that by putting it on your client, you can abstract away the knowledge
+that this is even necessary, and it fits wonderfully into a DI pattern of injecting
+a Guzzle <code>ClientInterface</code> into your classes.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/faktory-worker-client-php/" class="left arrow">&#8592;</a>
+		<a href="/posts/dotnet-postgres-context/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.722081705 &#43;0000 UTC m=&#43;0.538524471">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

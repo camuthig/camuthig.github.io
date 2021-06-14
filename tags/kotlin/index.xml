@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kotlin on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/kotlin/</link>
+    <description>Recent content in Kotlin on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 24 Apr 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/kotlin/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>GraphQL Server Built on Ktor</title>
+      <link>https://camuthig.dev/posts/ktor-graphql-server/</link>
+      <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/ktor-graphql-server/</guid>
+      <description>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error handling. Please review and understand any code before reusing it, and feel free to leave comments on the GitHub project
+With authentication in place on the Ktor server, we can move on to building out the skeleton of the GraphQL server, incorporating the authenticated user.</description>
+    </item>
+    
+    <item>
+      <title>Social Authentication with Ktor</title>
+      <link>https://camuthig.dev/posts/ktor-social-auth/</link>
+      <pubDate>Wed, 03 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/ktor-social-auth/</guid>
+      <description>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error handling. Please be review and understand any code before reusing it, and feel free to leave comments on the GitHub project
+As I continue to explore Kotlin as a server-side web development language and get experience with the available tools in that realm, I plan to build out a simple application, testing out a number of different tools and patterns.</description>
+    </item>
+    
+    <item>
+      <title>First Kotlin Package</title>
+      <link>https://camuthig.dev/posts/first-kotlin-package/</link>
+      <pubDate>Wed, 27 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/first-kotlin-package/</guid>
+      <description>I&amp;rsquo;ve finished and released my first Kotlin package to Bintray. It is still rough around the edges, but it is solving problems that I am facing while building an applicatin with Ktor. Developing it has also given me a good deal of experience with using Kotlin to solve problems.
+I&amp;rsquo;m calling the package credentials, and it is inspired by the credentials feature of Ruby on Rails. The library allows a developer to securely store credentials in a file that is located as part of the problem, for example resources/credentials.</description>
+    </item>
+    
+  </channel>
+</rss>

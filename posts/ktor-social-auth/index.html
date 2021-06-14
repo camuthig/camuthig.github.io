@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Social Authentication with Ktor &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-04-03 00:00:00 &#43;0000 UTC">April 3, 2019</time>
+</div>
+		<h1 class="post-title">Social Authentication with Ktor</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/kotlin">kotlin</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p><em>Disclaimer: I do not use Kotlin professionally, and I am learning the language and tools by building something and sharing
+my experiences here. This application is not production ready and is missing crucial pieces, like production-ready error
+handling. Please be review and understand any code before reusing it, and feel free to leave comments on the GitHub project</em></p>
+
+<p>As I continue to explore Kotlin as a server-side web development language and get experience with the
+available tools in that realm, I plan to build out a simple application, testing out a number of different tools
+and patterns. The application will be a GraphQL server for a collaborative To Do list (sounds familiar, am I right?),
+running on Ktor. The project can be found <a href="https://github.com/camuthig/ktor-social-graphql">here</a>.</p>
+
+<p>This post covers my implementation of an authentication mechanism for the GraphQL server, focusing on how a user will
+log into the application. The code specific to this post is based on the project
+<a href="https://github.com/camuthig/ktor-social-graphql/tree/49670770fcd30deaa53ff28d475cd2edf4c9bb2a">at this commit</a>. Going
+forward, I will try to do a better job of making pull requests within the project at each phase to make it a bit easier
+to see what I am doing along the way.</p>
+
+<p>Ktor offers the beginnings of a good <a href="https://ktor.io/servers/features/authentication/oauth.html">OAuth2</a> authentication
+mechanism out of the box. Ktor stops providing the developer tools after receiving the OAuth access token, though. It
+is up to each developer to determine what should be done with this token. For my use case, I don&rsquo;t want to authenticate any
+additional requests using this token, so I need to verify it with the identity provider (Google), which will yield the
+user&rsquo;s information, and then I want add that to my own system&rsquo;s database and creating a new token my system knows about. From
+there I can create my own token and return that to the consumer of my API.</p>
+
+<p>Let&rsquo;s get into it then, starting out by verifying the OAuth access token and retrieving the user&rsquo;s personal information.
+First, we need to define a route at which the login request will begin and redirect back to, following the OAuth protocol.
+This is can be defined in such a way to work for any number of identity providers using Ktor&rsquo;s <a href="https://ktor.io/servers/features/locations.html">Location feature</a>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="n">@Location</span><span class="p">(</span><span class="s">&#34;/login/{provider}/callback&#34;</span><span class="p">)</span>
+<span class="k">data</span> <span class="k">class</span> <span class="nc">LoginCallback</span><span class="p">(</span><span class="k">val</span> <span class="py">provider</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Next we need to define the OAuth handler that will accept requests at <code>/login/{provider}/callback</code> and implement the
+authentication logic. You can see here that I have defined my authentication routes as an extension function on the
+<code>Routing</code> object. This makes it easier for me to add the whole collection of routes to my Ktor application later.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">fun</span> <span class="nf">Routing</span><span class="p">.</span><span class="n">authRoutes</span><span class="p">(</span><span class="n">userRepository</span><span class="p">:</span> <span class="n">UserRepository</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">authenticate</span><span class="p">(</span><span class="s">&#34;oauth&#34;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">location</span><span class="p">&lt;</span><span class="n">LoginCallback</span><span class="p">&gt;</span> <span class="p">{</span>
+            <span class="n">param</span><span class="p">(</span><span class="s">&#34;error&#34;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// In case there is an error passed to us on the request, handle it here
+</span><span class="c1"></span>                <span class="n">handle</span> <span class="p">{</span>
+                    <span class="n">call</span><span class="p">.</span><span class="n">respond</span><span class="p">(</span><span class="n">HttpStatusCode</span><span class="p">.</span><span class="n">BadRequest</span><span class="p">,</span> <span class="n">call</span><span class="p">.</span><span class="n">parameters</span><span class="p">.</span><span class="n">getAll</span><span class="p">(</span><span class="s">&#34;error&#34;</span><span class="p">).</span><span class="n">orEmpty</span><span class="p">())</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">handle</span> <span class="p">{</span>
+                <span class="k">val</span> <span class="py">principal</span> <span class="p">=</span> <span class="n">call</span><span class="p">.</span><span class="n">authentication</span><span class="p">.</span><span class="n">principal</span><span class="p">&lt;</span><span class="n">OAuthAccessTokenResponse</span><span class="p">.</span><span class="n">OAuth2</span><span class="p">&gt;()</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">principal</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">val</span> <span class="py">providerName</span> <span class="p">=</span> <span class="n">call</span><span class="p">.</span><span class="n">application</span><span class="p">.</span><span class="n">locations</span><span class="p">.</span><span class="n">resolve</span><span class="p">&lt;</span><span class="n">LoginCallback</span><span class="p">&gt;(</span><span class="n">LoginCallback</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="n">call</span><span class="p">).</span><span class="n">provider</span>
+                    <span class="k">val</span> <span class="py">oauthConfiguration</span> <span class="p">=</span> <span class="n">OAuthConfiguration</span><span class="p">.</span><span class="n">oauthProviders</span><span class="na">[providerName]</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">oauthConfiguration</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="c1">// Get the identity from the OAuth provider
+</span><span class="c1"></span>                        <span class="k">val</span> <span class="py">socialIdentity</span> <span class="p">=</span> <span class="n">oauthConfiguration</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">getIdentity</span><span class="p">(</span><span class="n">principal</span><span class="p">.</span><span class="n">accessToken</span><span class="p">)</span>
+
+                        <span class="c1">// TODO should handle errors from this call as well
+</span><span class="c1"></span>
+                        <span class="c1">// Find our user in our local data store
+</span><span class="c1"></span>                        <span class="k">var</span> <span class="py">user</span> <span class="p">=</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">getUser</span><span class="p">(</span><span class="n">providerName</span><span class="p">,</span> <span class="n">socialIdentity</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="p">(</span><span class="n">user</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="c1">// If the user does not yet exist, add their identity to our data store
+</span><span class="c1"></span>                            <span class="n">user</span> <span class="p">=</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">linkIdentity</span><span class="p">(</span><span class="n">providerName</span><span class="p">,</span> <span class="n">socialIdentity</span><span class="p">)</span>
+                        <span class="p">}</span>
+
+                        <span class="n">call</span><span class="p">.</span><span class="n">respond</span><span class="p">(</span><span class="n">LoginResponse</span><span class="p">(</span><span class="n">JwtConfiguration</span><span class="p">.</span><span class="n">makeToken</span><span class="p">(</span><span class="n">user</span><span class="p">)))</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="n">call</span><span class="p">.</span><span class="n">application</span><span class="p">.</span><span class="n">log</span><span class="p">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#34;Missing identity provider configuration for $providerName&#34;</span><span class="p">)</span>
+                        <span class="n">call</span><span class="p">.</span><span class="n">respond</span><span class="p">(</span><span class="n">HttpStatusCode</span><span class="p">.</span><span class="n">NotFound</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">call</span><span class="p">.</span><span class="n">respond</span><span class="p">(</span><span class="n">HttpStatusCode</span><span class="p">.</span><span class="n">Unauthorized</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>This logic is missing some error handling, but gets the code to where it needs to be with regards to verifying the user&rsquo;s
+identity. The steps involved are:</p>
+
+<ol>
+<li>Find the OAuth provider configuration using the <code>provider</code> parameter in the URL</li>
+<li>Get the user&rsquo;s identity from the OAuth provider</li>
+<li>Find the user in our own system, creating a new user if they do not yet exist</li>
+<li>Generating our own token based on the found user</li>
+</ol>
+
+<p>The most important part here is just a fews lines of code.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">val</span> <span class="py">socialIdentity</span> <span class="p">=</span> <span class="n">oauthConfiguration</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">getIdentity</span><span class="p">(</span><span class="n">principal</span><span class="p">.</span><span class="n">accessToken</span><span class="p">)</span>
+
+<span class="k">var</span> <span class="py">user</span> <span class="p">=</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">getUser</span><span class="p">(</span><span class="n">providerName</span><span class="p">,</span> <span class="n">socialIdentity</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">user</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">user</span> <span class="p">=</span> <span class="n">userRepository</span><span class="p">.</span><span class="n">linkIdentity</span><span class="p">(</span><span class="n">providerName</span><span class="p">,</span> <span class="n">socialIdentity</span><span class="p">)</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>This block of code has two encapsulations I created to make interacting with my authentication module easier. The first
+is the <code>SocialIdentityProvider</code> (<code>oauthConfiguration.second.getIdentity</code> in this case). This encapsulation allows my
+code to succinctly define sending an OAuth token to an identity provider, and retrieve back a subset of important data for my
+own authentication module. The interface and data class are straight forward, and the concise nature of these definitions is
+one of my favorite parts of programming with Kotlin.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">data</span> <span class="k">class</span> <span class="nc">SocialIdentity</span><span class="p">(</span><span class="k">val</span> <span class="py">id</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="k">val</span> <span class="py">name</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="k">val</span> <span class="py">nickname</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="k">val</span> <span class="py">email</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="k">val</span> <span class="py">avatar</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span>
+
+<span class="k">interface</span> <span class="nc">SocialIdentityProvider</span> <span class="p">{</span>
+    <span class="k">suspend</span> <span class="k">fun</span> <span class="nf">getIdentity</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="n">String</span><span class="p">):</span> <span class="n">SocialIdentity</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The <code>GoogleIdentityProvider</code> can be found <a href="https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/social/GoogleIdentityProvider.kt">here</a>. This code sends a request to Google&rsquo;s <code>userinfo</code> route and parses the response into a
+<code>SocialIdentity</code> object.</p>
+
+<p>The second encapsulation is the idea of a <code>UserRepository</code>. I have a love/hate relationship with the <a href="https://martinfowler.com/eaaCatalog/repository.html">repository pattern</a>,
+but I believe it fits well here, requiring a small API footprint and allowing for easier
+testing later down the road. You may notice that I don&rsquo;t use all of these functions yet, but I plan to going forward,
+and we will get back to that in a later post.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">interface</span> <span class="nc">UserRepository</span> <span class="p">{</span>
+    <span class="k">fun</span> <span class="nf">getUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">Int</span><span class="p">):</span> <span class="n">User</span><span class="p">?</span>
+
+    <span class="k">fun</span> <span class="nf">getUserByEmail</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="n">String</span><span class="p">):</span> <span class="n">User</span><span class="p">?</span>
+
+    <span class="k">fun</span> <span class="nf">addUser</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span>
+
+    <span class="k">fun</span> <span class="nf">getUser</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="n">socialIdentity</span><span class="p">:</span> <span class="n">SocialIdentity</span><span class="p">):</span> <span class="n">User</span><span class="p">?</span>
+
+    <span class="k">fun</span> <span class="nf">linkIdentity</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="n">socialIdentity</span><span class="p">:</span> <span class="n">SocialIdentity</span><span class="p">):</span> <span class="n">User</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>My <a href="https://github.com/camuthig/ktor-social-graphql/blob/49670770fc/src/auth/repository/RequeryUserRepository.kt">implementation of the repository</a>
+uses <a href="https://github.com/requery/requery">Requery</a>. Requery has worked well, but I have already seen some issues around
+eager loading and navigating to relationships (multiple queries where a single query would do, for example). I will most
+likely switch it out to a different implementation later, which is another benefit of the repository pattern.</p>
+
+<p>And now I have a working authentication system built in my Ktor server, using Google as my identity provider and returning a
+JWT once the user successfully logs in. The next phase of this project will be to define out the basis for the GraphQL
+server and hook this authentication mechanism into it.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/first-kotlin-package/" class="left arrow">&#8592;</a>
+		<a href="/posts/lumen-custom-database-connection/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.720747995 &#43;0000 UTC m=&#43;0.537190790">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

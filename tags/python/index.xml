@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Python on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/python/</link>
+    <description>Recent content in Python on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 10 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Building Custom Django Fields</title>
+      <link>https://camuthig.dev/posts/django_drf_custom_object_id_field/</link>
+      <pubDate>Sun, 10 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/django_drf_custom_object_id_field/</guid>
+      <description>I recently needed to implement a special kind of field in Django Rest Framework that turned out to be a fun experiment. I recreated this in a simple Django application, and the bulk of the DRF-related code can be found here.
+First, the API used a hashed ID. So the primary key from the database was taken, additional information added to it and then hashed.
+Second, the API to set the relationship value behaved differently than when reading it.</description>
+    </item>
+    
+    <item>
+      <title>Python Version and Dependency Management</title>
+      <link>https://camuthig.dev/posts/python-version-dependency-management/</link>
+      <pubDate>Tue, 21 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/python-version-dependency-management/</guid>
+      <description>I have only been a professional Python developer for three months. I made this transition after several years in the PHP ecosystem, and I am still learning some nuances of Python. One area I have found very challenging is version and dependency management. I think it has been hard for me because it was a pretty simple concept in PHP. For versions, I didn&amp;rsquo;t often change them, but when I did, I would usually unlink the current PHP binaries and link up new ones through some sort of script.</description>
+    </item>
+    
+    <item>
+      <title>Developing on Windows Using WSL 2</title>
+      <link>https://camuthig.dev/posts/windows-development-wsl2/</link>
+      <pubDate>Sat, 18 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/windows-development-wsl2/</guid>
+      <description>I just ran across this draft on my machine after several months (I wrote this in January), so hopefully it is clean enough and I believe the information is still up to date.
+Below are my thoughts and experience setting up and testing the use of Window&amp;rsquo;s WSL 2 system for development work. The findings are based on running a production-ready Django application, but only doing minor modifications to test how the development flow works.</description>
+    </item>
+    
+  </channel>
+</rss>

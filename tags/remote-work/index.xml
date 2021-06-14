@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Remote Work on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/remote-work/</link>
+    <description>Recent content in Remote Work on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 29 May 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/remote-work/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Remote Time Zones Post Mortem</title>
+      <link>https://camuthig.dev/posts/remote-time-post-mortem/</link>
+      <pubDate>Wed, 29 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/remote-time-post-mortem/</guid>
+      <description>I finished my time working from Australia on May 10, making it just over three months of that I spent working from a siginificantly different (8+ hours) time zone than many of my coworkers. In my last post discussing this topic, I covered some of the pain points this time difference created, and I would like to discuss what worked well for me and what might have been better during that time.</description>
+    </item>
+    
+    <item>
+      <title>On Working Remote and Time Zones</title>
+      <link>https://camuthig.dev/posts/remote-time-differences/</link>
+      <pubDate>Wed, 13 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/remote-time-differences/</guid>
+      <description>Just over one month ago, my wife and I moved to Australia temporarily. We will be here for three or four months, and during that time, I will continue working for my company back in the United States. This means I am working remotely, but more importantly that I am working with a large time difference between myself and my coworkers. My coworkers are split between the East Coast (engineering team) and West Coast (product teams) of the United States, so I am 8.</description>
+    </item>
+    
+  </channel>
+</rss>

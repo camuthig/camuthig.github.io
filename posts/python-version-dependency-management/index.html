@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Python Version and Dependency Management &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2020-04-21 00:00:00 &#43;0000 UTC">April 21, 2020</time>
+</div>
+		<h1 class="post-title">Python Version and Dependency Management</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/python">python</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/development">development</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<p>I have only been a professional Python developer for three months. I made this transition after several years in the PHP
+ecosystem, and I am still learning some nuances of Python. One area I have found very challenging is version and
+dependency management. I think it has been hard for me because it was a pretty simple concept in PHP. For versions, I
+didn&rsquo;t often change them, but when I did, I would usually unlink the current PHP binaries and link up new ones through
+some sort of script. More confusing for me, though, was dependency management. PHP&rsquo;s <a href="https://getcomposer.org">Composer</a>
+is an amazing tool and is the defacto choice in PHP-land, unless you are downloading dependencies and committing them
+to your project. The Python world, however, appears to use <code>pip</code> for the most part, but then they use <code>distutils</code> and
+<code>setup_tools</code> with their <code>setup.py</code> file when developing packages instead of applications. And these dependencies are
+usually installed to virtual environments, instead of into a single directory within your project. It is just a lot, and
+still maturing.</p>
+
+<p>So there are a few important concepts in Python application development.</p>
+
+<ul>
+<li>Python version installation and management</li>
+<li>Virtual environment management</li>
+<li>Depdendency management</li>
+</ul>
+
+<h1 id="python-version-management">Python Version Management</h1>
+
+<p>Since January 1, 2020, Python 2 is no longer supported, but I believe version management was largely important prior to
+that point because the jump from Python 2 to Python 3 was a significant, long-term effort for teams. Having packages
+and applications on both versions was extremely likely.</p>
+
+<p>Version management allows developers to install multiple versions of the Python interpreter onto their machine and
+quickly switch between them.</p>
+
+<p>The best tool I have found to accomplish this is <a href="https://github.com/pyenv/pyenv">pyenv</a>. To install a particular
+version of Python you would just</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> pyenv install <span class="m">3</span>.8.1</code></pre></td></tr></table>
+</div>
+</div>
+<p>Once installed, you can set your machine to use the new version globally</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> pyenv global <span class="m">3</span>.8.1</code></pre></td></tr></table>
+</div>
+</div>
+<p>If you instead want to just use this version when working within a specific project, you could</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> my-project
+pyenv <span class="nb">local</span> <span class="m">3</span>.8.1</code></pre></td></tr></table>
+</div>
+</div>
+<p>This will create a local <code>.python-version</code> file with just the version number. Any time you are within this <code>my-project</code>
+directory or a sub-directory, you will use that version of Python.</p>
+
+<h1 id="virtual-environment-management">Virtual Environment Management</h1>
+
+<p>When installing dependencies in Python, they are intalled within the <code>site-packages</code> directory of the Python interpreter you
+are currently using. This means that if you are working on two Python applications on the same machine, they will be
+accessing the same dependencies, which may not match.</p>
+
+<p>To resolve this problem, the Python community creates &ldquo;virtual environments&rdquo; linked to a particular version of Python, each
+with their own <code>site-packages</code> directory. The developer creates a virtual envionrment and the &ldquo;activates&rdquo; it, using a shim
+pattern to select the correct interpreter and <code>site-packages</code> directory.</p>
+
+<p>I have found a few tools for managing virtual environments, each with their own strengths. So far I have been using <code>pyenv</code>
+with the <a href="https://github.com/pyenv/pyenv-virtualenv">virtualenv plugin</a> installed with solid results. I often forget the
+commands for creating new virtual environments, but that is because I don&rsquo;t often use it. With the <code>pyenv</code> plugin, creating
+and using a virtual environment uses either <code>virtualenv</code> or <code>venv</code>, depending on the version of Python, and gives a single
+CLI interface for creating and activating environments.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">pyenv virtualenv <span class="m">3</span>.8.1 blah
+pyenv activate blah
+pyenv deactivate blah</code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="virtualenv">Virtualenv</h2>
+
+<p><a href="https://virtualenv.pypa.io/en/latest/">Virtualenv</a> appears to be the historical go-to solution for virtual environments and
+still works today. A benefit of virtualenv is that is allows the developer to use an arbitrary version of Python when creating
+a new virtual environment, which is different than the officially supported <code>venv</code> tooling. The project also promotes a number of
+other benefits, but at a very basic level, these don&rsquo;t come into play as much.</p>
+
+<h2 id="venv">Venv</h2>
+
+<p>As of Python 3.3, <a href="https://docs.python.org/3/library/venv.html">venv</a> is the module officially supported by the Python language. It is easy to use
+but an important difference between it and virtualenv is that it creates virtual environments based on the <strong>current version</strong>
+of python. You cannot arbitrarily tell it a version to use. This means that before you create a new virtual environment, you
+must swap to the correct version.</p>
+
+<p>To use this manually instead of with the <code>pyenv</code> plugin, it would look like</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">pyenv <span class="nb">local</span> <span class="m">3</span>.8.1
+python -m venv env
+<span class="c1"># activate the environment</span>
+<span class="nb">source</span> env/bin/activate</code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="poetry">Poetry</h2>
+
+<p><a href="https://python-poetry.org/">Poetry</a> will come up more in the depedency management section, but it is a new tool that I have not used professionally,
+but I am excited about it because it feels much like Composer. It uses the <code>pyproject.toml</code> format defined in
+<a href="https://www.python.org/dev/peps/pep-0518/">PEP 518</a>. With that structure, it supports having development and production
+dependencies in a single file and it works for package as well as application development.</p>
+
+<p>Poetry also adds basic support, similar to <code>venv</code> for virtual environment creation. The easiest way to do this is to treat
+it like <code>venv</code> and select the local python version first using <code>pyenv</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">pyenv <span class="nb">local</span> <span class="m">3</span>.8.1
+poetry env use <span class="m">3</span>.8
+<span class="c1"># activate the virtual environment</span>
+poetry shell</code></pre></td></tr></table>
+</div>
+</div>
+<p>Poetry will create a new environment for you based on the current version of Python. I don&rsquo;t love that the name of
+the enviroment includes some unique key, but that I haven&rsquo;t dug into why it does that yet, either. It may be important.</p>
+
+<h1 id="depedency-managment">Depedency Managment</h1>
+
+<p>And finally there is the concept of dependency management - installing the libraries you need to build your application.</p>
+
+<p>I have not done any package development in Python, so I am not touching on <code>distutils</code> and <code>setup_tools</code> here. This is
+focused on installing dependencies for application development.</p>
+
+<p>There is a good deal of progress being made currently to revamp dependency management including PEPs like
+<a href="https://www.python.org/dev/peps/pep-0508/">508</a> and <a href="https://www.python.org/dev/peps/pep-0518/">518</a> that will,
+in my opinion, revolutionize depedency management for Python.</p>
+
+<h2 id="pip">Pip</h2>
+
+<p>Pip appears to be the longest lasting, defacto solution for installing dependencies at this time. Pip uses a simple
+requirements file format for defining dependencies and does not support any sort of lock file, though. It is also easy
+to use as it is automatically installed into your virtual environments when creating them with either <code>virtualenv</code> or
+<code>venv</code>.</p>
+
+<p>Adding a new dependency to the environment is</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> pip install django</code></pre></td></tr></table>
+</div>
+</div>
+<p>A version can be specified using a version</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> pip install <span class="nv">django</span><span class="o">==</span><span class="m">3</span>.0.1</code></pre></td></tr></table>
+</div>
+</div>
+<p>Picking from a range of versions doesn&rsquo;t support semver, but does allow for ranges</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> pip install <span class="s1">&#39;django&gt;=3.0,&lt;4.0&#39;</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>Pip does not support lock files, but you can install dependencies from a requirements file that might look like</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-text" data-lang="text"><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-text" data-lang="text">django&gt;=3.0,&lt;4.0
+otherpackage==1.0.0</code></pre></td></tr></table>
+</div>
+</div>
+<p>This requirements file can also be generated based on the current environment by calling <code>freeze</code> and redirecting the
+output to a file</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> pip freeze &gt; requirements.txt</code></pre></td></tr></table>
+</div>
+</div>
+<p>If you want some dependencies to be only for the development environments, you have to manually maintain two separate
+files</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">pip install -r requirements.txt
+pip install -r requirements-dev.txt</code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="poetry-1">Poetry</h2>
+
+<p>Poetry is still new to the Python ecosystem, having released version 1.0.0 in December 2019. It is a promising example
+of where the Python ecosystem can go. Some features I really love are:</p>
+
+<ul>
+<li>Lock file support</li>
+<li>Dev and production dependencies in a single file</li>
+<li>Same patterns for application and package development</li>
+<li>Not dependent on the environment for creating the lock/freeze file</li>
+<li>Python version requirement setting</li>
+</ul>
+
+<p>Honestly, Poetry <em>feels</em> like Composer, which is probably why I am excited about it and plan to try it out in some
+projects now. For those from the NodeJS world, it will feel very similar to NPM and Yarn.</p>
+
+<p>Before installing dependencies, pop into the virtual environment with <code>poetry shell</code>.</p>
+
+<p>To add a new dependency just</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> poetry add django@^3.0</code></pre></td></tr></table>
+</div>
+</div>
+<p>This will add the new dependency to your <code>pyproject.toml</code>, install it, and update your <code>poetry.lock</code>.</p>
+
+<p>To add a dev dependency, just</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> poetry add --dev pytest</code></pre></td></tr></table>
+</div>
+</div>
+<p>Finally, if you get a clean project, you can install all of the dependencies using</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> poetry install --no-root</code></pre></td></tr></table>
+</div>
+</div>
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/windows-development-wsl2/" class="left arrow">&#8592;</a>
+		<a href="/posts/django_drf_custom_object_id_field/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.71564831 &#43;0000 UTC m=&#43;0.532091114">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

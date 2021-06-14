@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				First Kotlin Package &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-03-27 00:00:00 &#43;0000 UTC">March 27, 2019</time>
+</div>
+		<h1 class="post-title">First Kotlin Package</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/kotlin">kotlin</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p>I&rsquo;ve finished and released my first Kotlin package to Bintray. It is still rough around the edges, but it is
+solving problems that I am facing while building an applicatin with Ktor. Developing it has also given
+me a good deal of experience with using Kotlin to solve problems.</p>
+
+<p>I&rsquo;m calling the package <a href="https://bintray.com/camuthig/maven/credentials-core">credentials</a>, and it is inspired by the <code>credentials</code> feature of Ruby on Rails.
+The library allows a developer to securely store credentials in a file that is located as part of the problem, for example
+<code>resources/credentials.conf.enc</code>. These are encrypted using a generated key, that should be included in the project&rsquo;s
+<code>.gitignore</code>. The format of the file follows HOCON, and is parseable using the <a href="https://github.com/lightbend/config">Lightbend Config</a> library.</p>
+
+<p>Along with the core library, I have also published a <a href="https://bintray.com/camuthig/maven/credentials-gradle">Gradle plugin</a>
+to support mantaining the file using a Gradle project as well as to use the credentials as part of the Gradle biuld.</p>
+
+<p>I was targeting two use cases as I built the project.</p>
+
+<p>First I wanted to make it easier for me to access my database credentials when using Flyway with Gradle. Often, what I have
+seen suggested is to use system properties to securely access values like your database username and password. I have grown
+accustomed to using a .env file, though, so this felt clunky to me. Instead what I can do now is:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="c1">// build.gradle.kts
+</span><span class="c1"></span>
+<span class="n">flyway</span> <span class="p">{</span>
+    <span class="n">locations</span> <span class="p">=</span> <span class="n">arrayOf</span><span class="p">(</span><span class="s">&#34;filesystem:resources/db/migration&#34;</span><span class="p">)</span>
+    <span class="n">user</span> <span class="p">=</span> <span class="n">credentials</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="s">&#34;flyway.user&#34;</span><span class="p">)</span>
+    <span class="n">password</span> <span class="p">=</span> <span class="n">credentials</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="s">&#34;flyway.password&#34;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="p">=</span> <span class="n">credentials</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="s">&#34;flyway.url&#34;</span><span class="p">)</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The <code>credentials</code> symobole is Gradle extension, supporting autocomplete in IntelliJ, and gives access to a
+<code>getString</code> as well as a <code>getStringOrElse</code> function, making it easy to pull in my credentials.</p>
+
+<p>The other use case I had in mind was accessing the same credentials within the Ktor application that I am building.
+I&rsquo;m still working out the nuances of the developer experience on this one, but as it stands now, building a datasource to
+access my Postgres instance looks something like</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="k">object</span> <span class="nc">Credentials</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="k">val</span> <span class="py">config</span> <span class="p">=</span> <span class="n">ClassLoaderCredentialsStore</span><span class="p">(</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">getSystemClassLoader</span><span class="p">()).</span><span class="n">load</span><span class="p">()</span>
+
+    <span class="k">fun</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">String</span> <span class="p">=</span> <span class="s">&#34;&#34;</span><span class="p">):</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="n">hasPath</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">config</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">createDataSource</span><span class="p">():</span> <span class="n">DataSource</span> <span class="p">{</span>
+
+    <span class="k">val</span> <span class="py">dataSource</span> <span class="p">=</span> <span class="n">PGSimpleDataSource</span><span class="p">()</span>
+
+    <span class="n">dataSource</span><span class="p">.</span><span class="n">setURL</span><span class="p">(</span><span class="n">Credentials</span><span class="p">.</span><span class="k">get</span><span class="p">(</span><span class="s">&#34;flyway.url&#34;</span><span class="p">))</span>
+    <span class="n">dataSource</span><span class="p">.</span><span class="n">user</span> <span class="p">=</span> <span class="n">Credentials</span><span class="p">.</span><span class="k">get</span><span class="p">(</span><span class="s">&#34;flyway.user&#34;</span><span class="p">)</span>
+    <span class="n">dataSource</span><span class="p">.</span><span class="n">password</span> <span class="p">=</span> <span class="n">Credentials</span><span class="p">.</span><span class="k">get</span><span class="p">(</span><span class="s">&#34;flyway.password&#34;</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">dataSource</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+<p>The current <code>CredentialsStore</code> interface only defines a <code>load</code> function, which reads the files from the system and parses it
+into a <code>Config</code> object. It doesn&rsquo;t make a ton of sense to continue reading the file from the system, however, so I plan to
+iterate on the library to provide a better developer interaction.</p>
+
+<p>The processing of writing these packages was really enjoyable, and the Kotlin developer experience is great. I had trouble
+working with Gradle throughout the process, however. I think it was partially my fault, for trying to do things that Gradle
+was not meant to do or things that were more complex than they needed to be. I also feel that Gradle is still maturing into its
+Kotlin DSL, and it can be difficult to find appropriate support online when most experience over the last several years has
+centered around their Groovy DSL.</p>
+
+<p>All in all, I&rsquo;m excited to continue exploring Kotlin. I have plans to eventually build a GraphQL server using Ktor, but I am
+getting to it in a very slow manner, trying to learn from each individual piece I find I need to build. You can count on
+seeing more of my attempts to use Kotlin in the near feature.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/remote-time-differences/" class="left arrow">&#8592;</a>
+		<a href="/posts/ktor-social-auth/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.718513753 &#43;0000 UTC m=&#43;0.534956518">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

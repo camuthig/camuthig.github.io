@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lumen on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/lumen/</link>
+    <description>Recent content in Lumen on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 17 Apr 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/lumen/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Creating Custom Database Connections in Lumen</title>
+      <link>https://camuthig.dev/posts/lumen-custom-database-connection/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/lumen-custom-database-connection/</guid>
+      <description>A friend recently came to me with a question on how to create a database connection in Lumen without using using external services to define the configuration values of the connection. I made some suggestions, but it was an interesting quesiton so I decided to try tackling a sample myself as well.
+I am not suggesting that the pattern described below for retrieving configuration values is a good idea. However, sometimes as developers we are required to work within certain constraints we cannot control.</description>
+    </item>
+    
+  </channel>
+</rss>

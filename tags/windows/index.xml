@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Windows on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/windows/</link>
+    <description>Recent content in Windows on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 18 Apr 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/windows/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Developing on Windows Using WSL 2</title>
+      <link>https://camuthig.dev/posts/windows-development-wsl2/</link>
+      <pubDate>Sat, 18 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/windows-development-wsl2/</guid>
+      <description>I just ran across this draft on my machine after several months (I wrote this in January), so hopefully it is clean enough and I believe the information is still up to date.
+Below are my thoughts and experience setting up and testing the use of Window&amp;rsquo;s WSL 2 system for development work. The findings are based on running a production-ready Django application, but only doing minor modifications to test how the development flow works.</description>
+    </item>
+    
+  </channel>
+</rss>

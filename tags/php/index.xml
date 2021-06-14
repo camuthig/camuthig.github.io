@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Php on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/php/</link>
+    <description>Recent content in Php on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 17 Apr 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/php/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Creating Custom Database Connections in Lumen</title>
+      <link>https://camuthig.dev/posts/lumen-custom-database-connection/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/lumen-custom-database-connection/</guid>
+      <description>A friend recently came to me with a question on how to create a database connection in Lumen without using using external services to define the configuration values of the connection. I made some suggestions, but it was an interesting quesiton so I decided to try tackling a sample myself as well.
+I am not suggesting that the pattern described below for retrieving configuration values is a good idea. However, sometimes as developers we are required to work within certain constraints we cannot control.</description>
+    </item>
+    
+    <item>
+      <title>Testing Emails with PHP, Gmail, and IMAP</title>
+      <link>https://camuthig.dev/posts/testing-email-php-gmail-imap/</link>
+      <pubDate>Wed, 16 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/testing-email-php-gmail-imap/</guid>
+      <description>I already discussed my open source project, Courier, and writing integration tests for SMTP emails using MailHog. Most of the courier implementations do not use SMTP, though. Even more importantly, I found that when testing email delivery through services like SparkPost and SendGrid there are a lot of edge cases that should be known and understood. For example, there is an issue sending emails to CC recipients using templates with SparkPost.</description>
+    </item>
+    
+    <item>
+      <title>Testing Emails with MailHog and PHP</title>
+      <link>https://camuthig.dev/posts/test_email_php_mailhog/</link>
+      <pubDate>Wed, 02 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/test_email_php_mailhog/</guid>
+      <description>I have been working on an open source project, on and off, for the last couple of years that is designed to give developers a standard, concise interface for delivering emails in PHP through third-party SMTP providers, like SparkPost and SendGrid. I recently decided to break out the logic for each of the providers into separate packages, making the core project contain just the interfaces, exceptions, and some helpful traits.</description>
+    </item>
+    
+    <item>
+      <title>PHP 7.3 Features I&#39;m Excited About</title>
+      <link>https://camuthig.dev/posts/php-73-features/</link>
+      <pubDate>Wed, 19 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/php-73-features/</guid>
+      <description>By the time this post is live, PHP 7.3 should already have dropped. I am very happy with the quality of work released by the core team since 7.0. They have built a number of amazing features into the language that focus on developer productivity, which makes a difference when maintaining a large project. PHP 7.3 follows suit, including several great features, but there are a few that I am especially excited about.</description>
+    </item>
+    
+    <item>
+      <title>Easy Oauth1 Client in PHP</title>
+      <link>https://camuthig.dev/posts/php-oauth1-client/</link>
+      <pubDate>Fri, 29 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/php-oauth1-client/</guid>
+      <description>I spent longer than I would have liked the other day finding a good way to use OAuth1 client credentials to integrate with an API in PHP. In the end, the solution was dead simple but not the first result on Packagist, so I thought I would put my notes down here to help others.
+The package I used was the Guzzle oauth-subscriber. For those not familiar, subscriber is a term that Guzzle uses to describe a number of their middleware, which I was unaware of and caused me to skip over it at first.</description>
+    </item>
+    
+    <item>
+      <title>A Faktory Client in PHP</title>
+      <link>https://camuthig.dev/posts/faktory-worker-client-php/</link>
+      <pubDate>Mon, 18 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/faktory-worker-client-php/</guid>
+      <description>Faktory is a worker server created by Mike Perham, the same person who created Sidekiq. His aim in developing the tool is to bring the same best practices hashed out by Sidekiq to languages besides Ruby. Faktory is still in a pre-release phase (at the time of writing this post it is at 0.7.0). It might not yet be ready for primetime, but I decided to give it a try anyway.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL Getters with Laravel Eloquent</title>
+      <link>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</guid>
+      <description>I recently began work on a proof-of-concept project I have been mentally shaping for some time now. In building this, I chose to stick with Laravel as a framework to build off of, as it is something I am familiar with, but I wanted to serve my application&amp;rsquo;s API using GraphQL instead of normal Laravel resources. For the task, I chose the Laravel GraphQL package, as I am already familiar with the underlying GraphQL implementation.</description>
+    </item>
+    
+  </channel>
+</rss>

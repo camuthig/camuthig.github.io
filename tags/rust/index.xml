@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rust on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/rust/</link>
+    <description>Recent content in Rust on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 06 Jun 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/rust/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Pattern Matching CLI commands with Rust</title>
+      <link>https://camuthig.dev/posts/rust-cli-pattern-matching/</link>
+      <pubDate>Thu, 06 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/rust-cli-pattern-matching/</guid>
+      <description>I&amp;rsquo;m building a CLI tool using Rust, and I ran into some difficulties figuring out the best way to work with the structopts crate using subcommands to break out my logic into separate functions. I suspect this is because I am new to Rust, but I felt it was worth documenting the challenge and solution.
+I&amp;rsquo;ll use a fake tool to demonstrate the pattern I used. Let&amp;rsquo;s say the tool is called ecko, and it is used to print two different kinds of messages: hellos and goodbyes.</description>
+    </item>
+    
+  </channel>
+</rss>

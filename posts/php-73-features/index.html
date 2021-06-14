@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				PHP 7.3 Features I&#39;m Excited About &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2018-12-19 00:00:00 &#43;0000 UTC">December 19, 2018</time>
+</div>
+		<h1 class="post-title">PHP 7.3 Features I&#39;m Excited About</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/php">php</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<p>By the time this post is live, PHP 7.3 should already have dropped. I am very happy with the quality of work released
+by the core team since 7.0. They have built a number of amazing features into the language that focus on
+developer productivity, which makes a difference when maintaining a large project. PHP 7.3 follows suit, including
+several great features, but there are a few that I am especially excited about.</p>
+
+<ul>
+<li><a href="#throw-on-json-error">Throw on JSON Errors</a></li>
+<li><a href="#indent-aware-docs">Indent Aware Heredoc/Nowdoc</a></li>
+<li><a href="#trailing-commas-in-function-calls">Trailing Commas in Function/Method Calls</a></li>
+</ul>
+
+<h3 id="throw-on-json-error">Throw on JSON Errors</h3>
+
+<h4 id="rfc-https-wiki-php-net-rfc-json-throw-on-error"><a href="https://wiki.php.net/rfc/json_throw_on_error">RFC</a></h4>
+
+<p>Parsing JSON is a common requirement for most APIs. Until 7.3, the common pattern was to attempt to decode the
+input, check for an error, and then proceed.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="nv">$input</span> <span class="o">=</span> <span class="s1">&#39;{&#34;invalid&#34;&#34;json&#34;}&#39;</span><span class="p">;</span>
+
+<span class="nv">$json</span> <span class="o">=</span> <span class="nx">json_decode</span><span class="p">(</span><span class="nv">$input</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nx">json_last_error</span><span class="p">()</span> <span class="o">!==</span> <span class="nx">JSON_ERROR_NONE</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid JSON: &#39;</span> <span class="o">.</span> <span class="nx">json_last_error_msg</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="c1">// Do things with my JSON
+</span><span class="c1"></span></code></pre></td></tr></table>
+</div>
+</div>
+<p>This was not an awful experience, but it does not match the <code>try/catch</code> pattern that most developers expect in PHP,
+making it difficult to remember to do this check. We are now presented a new option in the <code>JSON_THROW_ON_ERROR</code> option.
+This allows developers to tell PHP to throw an exception if it is unable to decode the JSON payload.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="nv">$input</span> <span class="o">=</span> <span class="s1">&#39;{&#34;invalid&#34;&#34;json&#34;}&#39;</span><span class="p">;</span>
+
+<span class="k">try</span> <span class="p">{</span>
+    <span class="nx">json_decode</span><span class="p">(</span><span class="nv">$input</span><span class="p">,</span> <span class="nx">JSON_THROW_ON_ERROR</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">JsonException</span> <span class="nv">$e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Not really needed anymore, but you can handle custom logic here.
+</span><span class="c1"></span>    <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid JSON: &#39;</span> <span class="o">.</span> <span class="nv">$e</span><span class="o">-&gt;</span><span class="na">getMessage</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="c1">// Do things with my JSON
+</span><span class="c1"></span></code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="indent-aware-docs">Indent Aware Heredoc/Nowdoc</h3>
+
+<h4 id="rfc-https-wiki-php-net-rfc-flexible-heredoc-nowdoc-indentation"><a href="https://wiki.php.net/rfc/flexible_heredoc_nowdoc_indentation">RFC</a></h4>
+
+<p>A common use case I have found for writing heredoc/nowdoc styled strings is when writing
+code that generates more code. The downside of this pattern is that within the heredoc/nowdoc, I have to
+drop the natural indentation of the outer code to ensure the indentation of whatever is generated is correct, making the
+whole file more difficult to read.</p>
+
+<p>Such a piece of code, might look something like the below. Because the block of text should not be
+indented in the resulting file, we have to shift the entire text completely to the left, ruining the clean indentation
+of the <code>ClassGenerator</code> class.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="k">class</span> <span class="nc">ClassGenerator</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">generate</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$name</span><span class="p">)</span><span class="o">:</span> <span class="nx">string</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="s">&lt;&lt;&lt;</span><span class="dl">NEWCLASS</span><span class="s">
+</span><span class="s">&lt;?php
+</span><span class="s">
+</span><span class="s">class $name
+</span><span class="s">{
+</span><span class="s">    public function __construct()
+</span><span class="s">    {
+</span><span class="s">    }
+</span><span class="s">}
+</span><span class="s"></span><span class="dl">NEWCLASS</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<p>With the new syntax, the indentation of the closing marker defines the amount of indentation that should be removed
+from the resulting string. Allowing our new class to look like this.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="k">class</span> <span class="nc">ClassGenerator</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">generate</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$name</span><span class="p">)</span><span class="o">:</span> <span class="nx">string</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="s">&lt;&lt;&lt;</span><span class="dl">NEWCLASS</span><span class="s">
+</span><span class="s">            &lt;?php
+</span><span class="s">
+</span><span class="s">            class $name
+</span><span class="s">            {
+</span><span class="s">                public function __construct()
+</span><span class="s">                {
+</span><span class="s">                }
+</span><span class="s">            }
+</span><span class="s">            </span><span class="dl">NEWCLASS</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<h3 id="trailing-commas-in-function-calls">Trailing Commas in Function/Method Calls</h3>
+
+<h4 id="rfc-https-wiki-php-net-rfc-trailing-comma-function-calls"><a href="https://wiki.php.net/rfc/trailing-comma-function-calls">RFC</a></h4>
+
+<p>This one is pretty straightforward: function and method calls can now include a trailing comma. This has been allowed in
+arrays, and I use it in my projects as a standard convention. I appreciate having this option in multiline arrays because
+it removes the possibility that I might attempt to add a new line to the array and forget to add the comma. The same
+is true for functions, especially variadic functions.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="nx">sprintf</span><span class="p">(</span>
+    <span class="s1">&#39;A very long string that %s wants to be able to add %s to&#39;</span><span class="p">,</span>
+    <span class="nv">$bob</span><span class="p">,</span>
+    <span class="s1">&#39;strings&#39;</span>
+<span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<p>In the above example, if I attempt to just add a new line below <code>'strings'</code>, I also need to remember to add the comma
+after <code>'strings'</code>. With PHP 7.3, a trailing comma can be preemptively added and always maintained.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="nx">sprintf</span><span class="p">(</span>
+    <span class="s1">&#39;A very long string that %s wants to be able to add %s to&#39;</span><span class="p">,</span>
+    <span class="nv">$bob</span><span class="p">,</span>
+    <span class="s1">&#39;strings&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<p>Another time I have found a trailing comma useful is when generating code. Allowing the trailing comma means the
+developer has to be just a little less careful handling the edge case of the last value in the list. For this reason,
+I&rsquo;m hopeful the core team can eventually support trailing commas on the function/method declaration as well, but that
+was not included in this particular RFC.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/deploying-hugo-blog-travis-ci/" class="left arrow">&#8592;</a>
+		<a href="/posts/test_email_php_mailhog/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.720603147 &#43;0000 UTC m=&#43;0.537045932">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

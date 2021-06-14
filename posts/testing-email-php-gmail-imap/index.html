@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Testing Emails with PHP, Gmail, and IMAP &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-01-16 00:00:00 &#43;0000 UTC">January 16, 2019</time>
+</div>
+		<h1 class="post-title">Testing Emails with PHP, Gmail, and IMAP</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/php">php</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/testing">testing</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/email">email</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<p>I already discussed my open source project, <a href="https://quartzy.github.io/courier">Courier</a>, and writing <a href="/test-email-php-mailhog">integration tests
+for SMTP emails using MailHog</a>. Most of the courier implementations do not use SMTP, though.
+Even more importantly, I found that when testing email delivery through services like SparkPost and SendGrid there are
+a lot of edge cases that should be known and understood. For example, there is an <a href="https://quartzy.github.io/courier/couriers/sparkpost/#temporary-fix-for-correctly-displaying-cc-header">issue sending emails to CC recipients
+using templates with SparkPost</a>.
+The only way to consistently ensure these errors are handled as the package is maintained is through integration tests.</p>
+
+<p>A full implementation of these integration tests can be seen <a href="https://github.com/quartzy/courier-sparkpost/blob/0.2.0/tests/SparkPostCourierIntegrationTest.php">here</a></p>
+
+<h2 id="the-idea">The Idea</h2>
+
+<p>With this, I decided to write integration tests for each courier. The basic structure of a test I wanted was</p>
+
+<ol>
+<li>Build a client</li>
+<li>Create an email</li>
+<li>Send the email to a known inbox</li>
+<li>Wait for the email to arrive in the inbox</li>
+<li>Parse the found email</li>
+<li>Ensure the expected values exist on the delivered email</li>
+</ol>
+
+<p>Then I would repeat the process with a templated email (where the markup for the email lived on the service&rsquo;s servers).</p>
+
+<h2 id="the-implementation">The Implementation</h2>
+
+<p>I decided I would send the emails to an existing Gmail account, and pull the emails out of that inbox using the
+functions from the PHP IMAP extension.</p>
+
+<p>My first goal was to use a single Gmail account, just to make maintenence of the account easier. However, I still needed
+to be able to receive emails into this account as the to, CC, and BCC recipients. For this, I set up three inboxes on
+my Gmail account <code>Courier/To</code>, <code>Courier/CC</code>, and <code>Courier/BCC</code>. From here, I used a pattern of adding <code>+to</code>, <code>+cc</code>, and
+<code>+bcc</code> to the recipient addresses in the email, such as <code>myaccount+to@gmail.com</code>, and I created filters to move emails
+with the each suffix into it&rsquo;s respective inbox in Gmail.</p>
+
+<p>Next, I needed to access the inboxes using PHP&rsquo;s IMAP functions. For this, I created an
+<a href="https://support.google.com/accounts/answer/185833?hl=en">application password</a> on my Gmail account. Once I did this,
+I accessed the emails using code similar to the below.</p>
+
+<p><strong>Security note: For this to work consistently on a CI server, your Gmail account should not have 2FA on it</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="nv">$attempts</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+<span class="k">while</span> <span class="p">(</span><span class="nv">$attempts</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="cm">/*
+</span><span class="cm">     * IMAP_SERVER = {imap.gmail.com:993/imap/ssl/novalidate-cert}
+</span><span class="cm">     * IMAP_USERNAME = myaccount@gmail.com
+</span><span class="cm">     * IMAP_PASSWORD = the app password created for my Gmail account
+</span><span class="cm">     */</span>
+    <span class="nv">$conn</span> <span class="o">=</span> <span class="nx">imap_open</span><span class="p">(</span><span class="nx">getenv</span><span class="p">(</span><span class="s1">&#39;IMAP_SERVER&#39;</span><span class="p">)</span> <span class="o">.</span> <span class="s1">&#39;Courier/To&#39;</span><span class="p">,</span> <span class="nx">getenv</span><span class="p">(</span><span class="s1">&#39;IMAP_USERNAME&#39;</span><span class="p">),</span> <span class="nx">getenv</span><span class="p">(</span><span class="s1">&#39;IMAP_PASSWORD&#39;</span><span class="p">));</span>
+
+    <span class="nv">$messages</span> <span class="o">=</span> <span class="nx">imap_search</span><span class="p">(</span><span class="nv">$conn</span><span class="p">,</span> <span class="s1">&#39;SUBJECT &#34;&#39;</span> <span class="o">.</span> <span class="nv">$subject</span> <span class="o">.</span> <span class="s1">&#39;&#34;&#39;</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$messages</span> <span class="o">!==</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// A message was found, so we can grab the body of it
+</span><span class="c1"></span>        <span class="k">return</span> <span class="nx">imap_fetchbody</span><span class="p">(</span><span class="nv">$conn</span><span class="p">,</span> <span class="nv">$messages</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nv">$attempts</span><span class="o">--</span><span class="p">;</span>
+    <span class="nx">imap_close</span><span class="p">(</span><span class="nv">$conn</span><span class="p">);</span>
+    <span class="nx">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<p>Finally, I needed a consistent way to parse the MIME email content found by the IMAP function. I found a great package
+called (Mail MIME Parser)[<a href="https://mail-mime-parser.org/">https://mail-mime-parser.org/</a>]. And so instead of just returning the body of the email as a
+string, my testing function would initialize a parser and return a <code>Message</code> object.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="k">use</span> <span class="nx">ZBateson\MailMimeParser\MailMimeParser</span><span class="p">;</span>
+
+<span class="o">...</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$messages</span> <span class="o">!==</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// A message was found, so we can grab the body of it
+</span><span class="c1"></span>        <span class="nv">$parser</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MailMimeParser</span><span class="p">();</span>
+        <span class="k">return</span> <span class="nv">$parser</span><span class="o">-&gt;</span><span class="na">parse</span><span class="p">(</span><span class="nx">imap_fetchbody</span><span class="p">(</span><span class="nv">$conn</span><span class="p">,</span> <span class="nv">$messages</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;&#39;</span><span class="p">));</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+<h2 id="the-final-product">The Final Product</h2>
+
+<p>Putting all of this together, I was able to create a base test class for my integration testing that allowed me to easily
+pull emails from the respective inbox based on the subject of the email as a parsed <code>Message</code> object
+for comparison to expected values.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="k">namespace</span> <span class="nx">Courier\Sparkpost\Test</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">ZBateson\MailMimeParser\Header\Part\ParameterPart</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">ZBateson\MailMimeParser\MailMimeParser</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">ZBateson\MailMimeParser\Message</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">IntegrationTestCase</span> <span class="k">extends</span> <span class="nx">\PHPUnit\Framework\TestCase</span>
+<span class="p">{</span>
+    <span class="k">protected</span> <span class="k">function</span> <span class="nf">getEmailDeliveredToTo</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$subject</span><span class="p">)</span><span class="o">:</span> <span class="o">?</span><span class="nx">Message</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getEmailFromMailBox</span><span class="p">(</span><span class="s1">&#39;Courier/To&#39;</span><span class="p">,</span> <span class="nv">$subject</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">function</span> <span class="nf">getEmailDeliveredToCc</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$subject</span><span class="p">)</span><span class="o">:</span> <span class="o">?</span><span class="nx">Message</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getEmailFromMailBox</span><span class="p">(</span><span class="s1">&#39;Courier/CC&#39;</span><span class="p">,</span> <span class="nv">$subject</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">function</span> <span class="nf">getEmailDeliveredToBcc</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$subject</span><span class="p">)</span><span class="o">:</span> <span class="o">?</span><span class="nx">Message</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getEmailFromMailBox</span><span class="p">(</span><span class="s1">&#39;Courier/BCC&#39;</span><span class="p">,</span> <span class="nv">$subject</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">function</span> <span class="nf">getEmailFromMailBox</span><span class="p">(</span><span class="nx">string</span> <span class="nv">$mailBox</span><span class="p">,</span> <span class="nx">string</span> <span class="nv">$subject</span><span class="p">)</span><span class="o">:</span> <span class="o">?</span><span class="nx">Message</span>
+    <span class="p">{</span>
+        <span class="nv">$parser</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MailMimeParser</span><span class="p">();</span>
+
+        <span class="nv">$attempts</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="nv">$attempts</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$conn</span> <span class="o">=</span> <span class="nx">imap_open</span><span class="p">(</span><span class="nx">getenv</span><span class="p">(</span><span class="s1">&#39;IMAP_SERVER&#39;</span><span class="p">)</span> <span class="o">.</span> <span class="nv">$mailBox</span><span class="p">,</span> <span class="nx">getenv</span><span class="p">(</span><span class="s1">&#39;IMAP_USERNAME&#39;</span><span class="p">),</span> <span class="nx">getenv</span><span class="p">(</span><span class="s1">&#39;IMAP_PASSWORD&#39;</span><span class="p">));</span>
+
+            <span class="nv">$messages</span> <span class="o">=</span> <span class="nx">imap_search</span><span class="p">(</span><span class="nv">$conn</span><span class="p">,</span> <span class="s1">&#39;SUBJECT &#34;&#39;</span> <span class="o">.</span> <span class="nv">$subject</span> <span class="o">.</span> <span class="s1">&#39;&#34;&#39;</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$messages</span> <span class="o">!==</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nv">$parser</span><span class="o">-&gt;</span><span class="na">parse</span><span class="p">(</span><span class="nx">imap_fetchbody</span><span class="p">(</span><span class="nv">$conn</span><span class="p">,</span> <span class="nv">$messages</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;&#39;</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="nv">$attempts</span><span class="o">--</span><span class="p">;</span>
+            <span class="nx">imap_close</span><span class="p">(</span><span class="nv">$conn</span><span class="p">);</span>
+            <span class="nx">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/test_email_php_mailhog/" class="left arrow">&#8592;</a>
+		<a href="/posts/remote-time-differences/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.723744106 &#43;0000 UTC m=&#43;0.540186905">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

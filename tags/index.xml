@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/</link>
+    <description>Recent content in Tags on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 11 Dec 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Blogging</title>
+      <link>https://camuthig.dev/tags/blogging/</link>
+      <pubDate>Tue, 11 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/blogging/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Csharp</title>
+      <link>https://camuthig.dev/tags/csharp/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/csharp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Development</title>
+      <link>https://camuthig.dev/tags/development/</link>
+      <pubDate>Tue, 21 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/development/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Django</title>
+      <link>https://camuthig.dev/tags/django/</link>
+      <pubDate>Sun, 10 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/django/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Dotnet</title>
+      <link>https://camuthig.dev/tags/dotnet/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/dotnet/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Email</title>
+      <link>https://camuthig.dev/tags/email/</link>
+      <pubDate>Wed, 16 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/email/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Graphql</title>
+      <link>https://camuthig.dev/tags/graphql/</link>
+      <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/graphql/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Kotlin</title>
+      <link>https://camuthig.dev/tags/kotlin/</link>
+      <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/kotlin/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Laravel</title>
+      <link>https://camuthig.dev/tags/laravel/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/laravel/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Linux</title>
+      <link>https://camuthig.dev/tags/linux/</link>
+      <pubDate>Sat, 02 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/linux/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Lumen</title>
+      <link>https://camuthig.dev/tags/lumen/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/lumen/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Php</title>
+      <link>https://camuthig.dev/tags/php/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/php/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Postgres</title>
+      <link>https://camuthig.dev/tags/postgres/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/postgres/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Python</title>
+      <link>https://camuthig.dev/tags/python/</link>
+      <pubDate>Sun, 10 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Remote Work</title>
+      <link>https://camuthig.dev/tags/remote-work/</link>
+      <pubDate>Wed, 29 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/remote-work/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Restframework</title>
+      <link>https://camuthig.dev/tags/restframework/</link>
+      <pubDate>Sun, 10 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/restframework/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Rust</title>
+      <link>https://camuthig.dev/tags/rust/</link>
+      <pubDate>Thu, 06 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/rust/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Testing</title>
+      <link>https://camuthig.dev/tags/testing/</link>
+      <pubDate>Wed, 16 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/testing/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Windows</title>
+      <link>https://camuthig.dev/tags/windows/</link>
+      <pubDate>Sat, 18 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/windows/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Year in Review</title>
+      <link>https://camuthig.dev/tags/year-in-review/</link>
+      <pubDate>Sat, 21 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/tags/year-in-review/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

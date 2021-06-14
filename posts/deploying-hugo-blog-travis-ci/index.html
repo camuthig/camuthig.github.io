@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Deploying a Hugo Blog with Travis CI &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2018-12-11 00:00:00 &#43;0000 UTC">December 11, 2018</time>
+</div>
+		<h1 class="post-title">Deploying a Hugo Blog with Travis CI</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/blogging">blogging</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		<p>I have enjoyed using <a href="https://gohugo.io/">Hugo</a> to build my blog, but I have not been happy with the deploy
+process to GitHub Pages. GitHub user pages always deploy the master branch of the project and also does not directly
+support Hugo. This means you need at least two branches to make this work, one for the source and one for the release.
+Up to this point, I was using the <a href="https://gohugo.io/hosting-and-deployment/hosting-on-github/#github-user-or-organization-pages">pattern suggested by the Hugo team for this</a>.
+This involves having one repository for the source of my blog, and then pushing the built files to a subproject that
+pointed to the repository that is deployed to GitHub Pages. I didn&rsquo;t love that this required having two repositories,
+and the process to release was automated with a script but wasn&rsquo;t as clean as I would have liked. I had a chance,
+recently, to use the <a href="https://docs.travis-ci.com/user/deployment/pages/">GitHub Pages deploy</a> with Travis CI, and
+I thought it could work well with Hugo too.</p>
+
+<p>I had two goals with the transition:</p>
+
+<ol>
+<li>Use a single repository for source and release</li>
+<li>Be able to automate deployment such that the blog could be released each night.</li>
+</ol>
+
+<p>To accomplish this I followed these steps.</p>
+
+<ol>
+<li>Create a new, empty repository</li>
+<li>Create a <code>source</code> branch, where the raw blog source will live</li>
+<li>Make the <code>source</code> branch protected on GitHub, just to be safe</li>
+<li>Add the <code>public</code> directory to my .gitignore</li>
+<li>Add the following <code>.travis.yml</code> to my project</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml">install<span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="c"># Get the release version of Hugo and unzip it</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>wget<span class="w"> </span>https<span class="p">:</span>//github.com/gohugoio/hugo/releases/download/v0.<span class="m">52</span>/hugo_0.52_Linux-64bit.tar.gz<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>tar<span class="w"> </span>-xzvf<span class="w"> </span>hugo_0.52_Linux-64bit.tar.gz<span class="w">
+</span><span class="w">
+</span><span class="w"></span>script<span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="c"># Execute the hugo build</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>./hugo<span class="w">
+</span><span class="w">
+</span><span class="w"></span>branches<span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="c"># I chose to build all branches aside from the master branch</span><span class="w">
+</span><span class="w">  </span>except<span class="p">:</span><span class="w">
+</span><span class="w">    </span>-<span class="w"> </span>master<span class="w">
+</span><span class="w">
+</span><span class="w"></span>deploy<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>pages<span class="w">
+</span><span class="w">  </span>skip-cleanup<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">  </span><span class="c"># This is my GitHub personal access token that is added as an encrypted key on Travis</span><span class="w">
+</span><span class="w">  </span>github-token<span class="p">:</span><span class="w"> </span>$GITHUB_TOKEN<span class="w">
+</span><span class="w">  </span><span class="c"># This tells Travis to deploy the output of the public directory to my master branch</span><span class="w">
+</span><span class="w">  </span>local-dir<span class="p">:</span><span class="w"> </span>public<span class="w">
+</span><span class="w">  </span>target-branch<span class="p">:</span><span class="w"> </span>master<span class="w">
+</span><span class="w">  </span>on<span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="c"># This will execute the deploy process only on the source branch</span><span class="w">
+</span><span class="w">    </span>branch<span class="p">:</span><span class="w"> </span>source</code></pre></td></tr></table>
+</div>
+</div>
+<p>With these changes, each time I push new code to the <code>source</code> branch, Travis will build the site and deploy it to
+GitHub Pages. Along with that, I can configure Travis CI to build my source branch each evening, allowing me to date
+my posts with a target date, and have them release automatically for me.</p>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/dotnet-postgres-context/" class="left arrow">&#8592;</a>
+		<a href="/posts/php-73-features/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.721367768 &#43;0000 UTC m=&#43;0.537810545">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

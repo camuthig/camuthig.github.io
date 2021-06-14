@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Laravel on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/laravel/</link>
+    <description>Recent content in Laravel on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 17 Apr 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/laravel/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Creating Custom Database Connections in Lumen</title>
+      <link>https://camuthig.dev/posts/lumen-custom-database-connection/</link>
+      <pubDate>Wed, 17 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/lumen-custom-database-connection/</guid>
+      <description>A friend recently came to me with a question on how to create a database connection in Lumen without using using external services to define the configuration values of the connection. I made some suggestions, but it was an interesting quesiton so I decided to try tackling a sample myself as well.
+I am not suggesting that the pattern described below for retrieving configuration values is a good idea. However, sometimes as developers we are required to work within certain constraints we cannot control.</description>
+    </item>
+    
+    <item>
+      <title>GraphQL Getters with Laravel Eloquent</title>
+      <link>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/laravel-eloquent-graphql-getter/</guid>
+      <description>I recently began work on a proof-of-concept project I have been mentally shaping for some time now. In building this, I chose to stick with Laravel as a framework to build off of, as it is something I am familiar with, but I wanted to serve my application&amp;rsquo;s API using GraphQL instead of normal Laravel resources. For the task, I chose the Laravel GraphQL package, as I am already familiar with the underlying GraphQL implementation.</description>
+    </item>
+    
+  </channel>
+</rss>

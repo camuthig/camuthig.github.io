@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+		<title>
+				Developing on Windows Using WSL 2 &middot; Chris Muthig
+		</title>
+	
+		
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		<link rel="stylesheet" href="/css/custom.css">
+		<link rel="stylesheet" href="/css/syntax.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+	
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="Chris Muthig" />
+	</head>
+	
+    <body>
+        <nav class="navbar">
+	<ul class="main-nav">
+		<li>
+			<a class="nav-links" href="/">Posts</a>
+		</li>
+		<li>
+			<a class="nav-links" href="/about">About</a>
+		</li>
+
+	</ul>
+</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Chris Muthig
+        <br>
+        <span>on&nbsp;</span><time datetime="2020-04-18 00:00:00 &#43;0000 UTC">April 18, 2020</time>
+</div>
+		<h1 class="post-title">Developing on Windows Using WSL 2</h1>
+
+<div class="tags-container">
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/windows">windows</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/python">python</a>
+    </div>
+
+    <div class="tag">
+        <a class="tag-link" href="https://camuthig.dev/tags/development">development</a>
+    </div>
+
+</div>
+
+
+
+		
+
+		
+
+<p><em>I just ran across this draft on my machine after several months (I wrote this in January), so hopefully it is clean enough
+and I believe the information is still up to date.</em></p>
+
+<p>Below are my thoughts and experience setting up and testing the use of Window&rsquo;s WSL 2 system for development work. The
+findings are based on running a production-ready Django application, but only doing minor modifications to test how the
+development flow works.</p>
+
+<h2 id="tl-dr">tl;dr</h2>
+
+<p>With WSL 2, Windows is nearly what I need for a development environment. The latest Slow Ring release, as of writing this,
+allows me to work efficiently in the CLI in the same way I would with either MacOS or Linux. If you work entirely within
+the CLI, using Vim for example, then it could be totally usable for you. Similarly, if you work mostly in VS Code, you are
+also probably set with WSL 2. VS Code, as a Microsoft product, has great support for WSL and provides many of the tools developers
+need.</p>
+
+<p>If your development flow depends primarily on tools from the JetBrains suite of products, then WSL 2 may not be quite
+game ready. For example, PyCharm can work as an editor, but many of the features do not work wonderfully well when
+your files live in the WSL environment. This is because it attempts to use path variables for the WSL mount paths with
+backslashes (Windows-style) instead of forward slashes when executing against the the WSL remote interpreter. If you
+are really just using PyCharm for the capabilities of the editor, this may not be a deal breaker though. For example,
+in my PHP work, I usually use PhpStorm, but run all commands and tests from a terminal. With Python, however, I use the
+debugger in PyCharm from time to time, which I can&rsquo;t find a good way to make work right now.</p>
+
+<h2 id="setting-it-up">Setting It Up</h2>
+
+<p>The whole environment is based on using the new <a href="https://docs.microsoft.com/en-us/windows/wsl/wsl2-about">WSL 2</a> backend
+to run a real Linux kernel inside of Windows. To kick things off, if you already have the standard WSL enabled, go ahead
+and add a Ubuntu distro to your system. If you don&rsquo;t already have WSL enabled, you can install the distro later. I suggest
+the Ubuntu distro because it is the only one supported by Docker for Windows at this time.</p>
+
+<p>The first step of this process is to get yourself onto the Slow Ring of the Windows Insiders Program. The
+<a href="https://insider.windows.com/en-us/getting-started/">process</a> is pretty simple, but it does mean losing some of your
+privacy when using your Windows machine. I avoided doing this experiment for a long time because of this, but curiousity
+finally got the best of me.</p>
+
+<p>Once in the program, you should be able to install the latest build from the Slow Ring. This will take a while, as most
+Windows updates do. After that is installed, the <a href="https://docs.microsoft.com/en-us/windows/wsl/wsl2-install">instructions</a>
+for setting up WSL 2 are very easy. This will also require a restart along the way.</p>
+
+<p>Finally, I installed the new <a href="https://www.microsoft.com/en-us/p/windows-terminal-preview/9n0dx20hk701">Windows Terminal</a>
+application. I have used Cmder in the past for Windows terminal access and just never realy loved it. I find the new
+Windows Terminal beta easy to use and a clean design. It is my go-to terminal on Windows now for sure.</p>
+
+<h2 id="some-hiccups">Some Hiccups</h2>
+
+<p>After I had a Ubuntu environment, I tried to set it up as I would any other Linux environment and ran into a couple of
+small issues.</p>
+
+<p>The first issue was that running <code>apt update</code> behind ExpressVPN failed to connect to some remote servers properly.
+After updating, there have been no issues with <code>apt install</code>. Looking back, I&rsquo;m not sure if this is only a WSL thing
+or not, but it is something to be aware of.</p>
+
+<p>The second hiccup came from my oh-my-zsh configuration as a very slow rendering when initializing or handling commands.
+The behavior was similar to an <a href="https://github.com/microsoft/WSL/issues/4256#issuecomment-568306593">issue I found on Github</a>,
+but in my case, I determined it was the size of the <code>PATH</code>
+variable that created the issues. By default the Windows path is added to the Linux path in WSL 2, and when my <code>.zshrc</code>
+attempted to add more information to that path, everything ground to a halt. To avoid this, I added a new <code>/etc/wsl.conf</code>
+file with the following details and restarted WSL by running <code>wsl.exe --shutdown</code> and then <code>wsl.exe</code>.</p>
+
+<pre><code>[interop]
+appendWindowsPath = false
+</code></pre>
+
+<p>This shortened my <code>PATH</code> variable greatly and made everything quick and snappy.</p>
+
+<h2 id="docker-for-wsl-2">Docker for WSL 2</h2>
+
+<p><a href="https://docs.docker.com/docker-for-windows/wsl-tech-preview/">Docker with WSL 2 support</a> was a snap to install. At the
+time of writing this, the tool only fully supports Ubuntu, which is why I suggest going with that Distro, even if it
+isn&rsquo;t your favorite.</p>
+
+<p>Once installed, Docker just works within your Linux environment, including Docker Compose, which I use heavily in my
+development workflow.</p>
+
+<h2 id="code-editor">Code Editor</h2>
+
+<h3 id="pycharm">PyCharm</h3>
+
+<p>PyCharm can work as an editor, but many of the features do not work wonderfully well when your files live in the WSL
+environment. This is because it attempts to use path variables for the WSL mount paths with backslashes (Windows-style)
+instead of forward slashes when executing against the the WSL remote interpreter. If you are really just using PyCharm
+for the capabilities of the editor, this may not be a deal breaker though. For example, in my PHP work, I usually use
+PhpStorm, but run all commands and tests from a terminal.</p>
+
+<p>The first thing I determined was that this required the Professional version of PyCharm. The Professional version
+includes <a href="https://www.jetbrains.com/help/pycharm/using-wsl-as-a-remote-interpreter.html">features for using remote interpreters</a>,
+including WSL.</p>
+
+<p>Second, I looked into how I could make PyCharm use the git binary from my Linux environment. There is a
+<a href="https://github.com/Volune/wslgit-for-jetbrains">tool</a> to support this. There are some caveats about this not working
+with all git commands at the time, though, so I stuck with just installing git directly to windows and having two
+executables on the system.</p>
+
+<p>It was also necessary to enable case sensitivity from the Windows version of Pycharm as noted in this
+<a href="https://youtrack.jetbrains.com/issue/IDEA-197573#focus=streamItem-27-3866974.0-0">issue</a>.</p>
+
+<p>Finally, I ran the commands suggested <a href="https://youtrack.jetbrains.com/issue/PY-36563#focus=streamItem-27-3745830.0-0">here</a>,
+but based on more recent comments I don&rsquo;t know if it was neccessary or not. It was easy enough to do, though, and it does
+not appear to have caused any issues.</p>
+
+<h3 id="vs-code">VS Code</h3>
+
+<p>Since PyCharm is not currently capable of providing me debugging support, I decided to look into Visual Studio (VS) Code
+instead. Since this tool is built by Microsoft it has excellent WSL support. If you are comfortable working within VS Code,
+then the Windows environment may be great. Personally, my muscle memory is so inherently linked to JetBrains tools that it
+is hard for me to switch.</p>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>The experience of setting up my development environment was good. It took less than a day to get this much figured out
+and working. By the end of it I was able to set up a Django project running directly in Ubuntu, with the database running
+via Docker Compose. I was able to use native Windows applications to interact with the application and make alterations
+to my code quickly.</p>
+
+<p>There are some things that I think this proposed Windows environment could improve upon though:</p>
+
+<ol>
+<li>Better window management. I found the new <a href="https://github.com/microsoft/PowerToys">PowerToys</a> library created by Microsoft
+that provides some window management. This is a promising tool, but it still has a lot to work on, like allowing for keyboard
+hotkeys to move a window into a particular position as well as moving windows between virtual desktops.</li>
+<li>Configurable hotkeys. There are some tools that allow for you to create hotkeys in Windows, but it does require manipulating
+registry keys, which isn&rsquo;t my favorite.</li>
+<li>For Python, I need full support for PyCharm and its debugger. Maybe as I get better with the language this will be
+less of an issue, but it is a deal breaker right now.</li>
+</ol>
+
+
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/2019-in-review/" class="left arrow">&#8592;</a>
+		<a href="/posts/python-version-dependency-management/" class="right arrow">&#8594;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			<span>
+			&copy; <time datetime="2021-06-14 17:19:53.716582209 &#43;0000 UTC m=&#43;0.533024991">2021</time> Chris Muthig. Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>

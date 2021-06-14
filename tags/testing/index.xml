@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Testing on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/testing/</link>
+    <description>Recent content in Testing on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 16 Jan 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/testing/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Testing Emails with PHP, Gmail, and IMAP</title>
+      <link>https://camuthig.dev/posts/testing-email-php-gmail-imap/</link>
+      <pubDate>Wed, 16 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/testing-email-php-gmail-imap/</guid>
+      <description>I already discussed my open source project, Courier, and writing integration tests for SMTP emails using MailHog. Most of the courier implementations do not use SMTP, though. Even more importantly, I found that when testing email delivery through services like SparkPost and SendGrid there are a lot of edge cases that should be known and understood. For example, there is an issue sending emails to CC recipients using templates with SparkPost.</description>
+    </item>
+    
+    <item>
+      <title>Testing Emails with MailHog and PHP</title>
+      <link>https://camuthig.dev/posts/test_email_php_mailhog/</link>
+      <pubDate>Wed, 02 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/test_email_php_mailhog/</guid>
+      <description>I have been working on an open source project, on and off, for the last couple of years that is designed to give developers a standard, concise interface for delivering emails in PHP through third-party SMTP providers, like SparkPost and SendGrid. I recently decided to break out the logic for each of the providers into separate packages, making the core project contain just the interfaces, exceptions, and some helpful traits.</description>
+    </item>
+    
+  </channel>
+</rss>

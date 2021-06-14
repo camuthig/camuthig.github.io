@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Year in Review on Chris Muthig</title>
+    <link>https://camuthig.dev/tags/year-in-review/</link>
+    <description>Recent content in Year in Review on Chris Muthig</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 21 Dec 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camuthig.dev/tags/year-in-review/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>2019 Year In Review</title>
+      <link>https://camuthig.dev/posts/2019-in-review/</link>
+      <pubDate>Sat, 21 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://camuthig.dev/posts/2019-in-review/</guid>
+      <description>My 2019 is best described as focusing on soft skills and taking on new roles in my career. I was able to work on a number of exciting projects as well, but those were natural progressions from projects I worked on previously, whereas so much of the soft skills were brand new, challenging experiences.
+Remote Work For the first time in my career, I spent 2019 working 100% remotely. This was first from Australia from January to May, and then from California for the remainder of the year.</description>
+    </item>
+    
+  </channel>
+</rss>
